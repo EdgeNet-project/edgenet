@@ -329,6 +329,19 @@ func GetConditionReadyStatus(node *corev1.Node) string {
 	return ""
 }
 
+func GetLivenessStatus(node *corev1.Node) string {
+	LivenessStatus:="True" 
+	eventRaw, _ := clientset.CoreV1().Events("default").List(context.TODO(), metav1.ListOptions{FieldSelector: "involvedObject.name=liveness-exec"})
+	for _, eventRow := range eventRaw.Items {
+		if eventRow.Reason == "Unhealthy" && eventRow.Source.host == node.ObjectMeta.name{
+			LivenessStatus="False"
+			break
+		}
+	}
+    return LivenessStatus
+	}
+
+
 // getNodeByHostname uses clientset to get namespace requested
 func getNodeByHostname(hostname string) (string, error) {
 	// Examples for error handling:
