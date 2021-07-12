@@ -205,19 +205,28 @@ func (c *Controller) syncHandler(key string) error {
 	}
 
 	allowedIPs := make([]net.IPNet, 0)
-	for _, s := range nc.Spec.VPN.Addresses {
-		ip := net.ParseIP(s)
-		var mask net.IPMask
-		if ip.To4() != nil {
-			mask = net.CIDRMask(32, 32)
-		} else {
-			mask = net.CIDRMask(128, 128)
-		}
+	if nc.Spec.VPN.AddressV4 != nil {
+		ip := net.ParseIP(*nc.Spec.VPN.AddressV4)
+		mask := net.CIDRMask(32, 32)
 		allowedIPs = append(allowedIPs, net.IPNet{IP: ip, Mask: mask})
+	}
+	if nc.Spec.VPN.AddressV6 != nil {
+		ip := net.ParseIP(*nc.Spec.VPN.AddressV6)
+		mask := net.CIDRMask(128, 128)
+		allowedIPs = append(allowedIPs, net.IPNet{IP: ip, Mask: mask})
+	}
+
+	var endpoint *net.UDPAddr
+	if nc.Spec.VPN.EndpointAddress != nil && nc.Spec.VPN.EndpointPort != nil {
+		endpoint = &net.UDPAddr{
+			IP:   net.ParseIP(*nc.Spec.VPN.EndpointAddress),
+			Port: *nc.Spec.VPN.EndpointPort,
+		}
 	}
 
 	peerConfig := wgtypes.PeerConfig{
 		AllowedIPs:        allowedIPs,
+		Endpoint:          endpoint,
 		PublicKey:         publicKey,
 		Remove:            false,
 		ReplaceAllowedIPs: true,

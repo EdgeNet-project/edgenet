@@ -27,9 +27,15 @@ spec:
         - name: Address
           type: string
           jsonPath: .spec.host
-        - name: Port
+        - name: VPN-Address-V4
+          type: string
+          jsonPath: .spec.vpn.addressV4
+        - name: VPN-Address-V6
+          type: string
+          jsonPath: .spec.vpn.addressV6
+        - name: SSH-Port
           type: integer
-          jsonPath: .spec.port
+          jsonPath: .spec.ssh.port
         - name: Enabled
           type: boolean
           jsonPath: .spec.enabled
@@ -46,23 +52,54 @@ spec:
             spec:
               type: object
               required:
-                - host
-                - port
                 - enabled
+                - host
+                - ssh
               properties:
+                enabled:
+                  type: boolean
                 tenant:
                   type: string
                   nullable: true
                   pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                 host:
                   type: string
-                port:
-                  type: integer
-                  minimum: 1
-                user:
-                  type: string
-                enabled:
-                  type: boolean
+                  description: the node IP address to be used by Kubernetes and SSH.
+                ssh:
+                  type: object
+                  properties:
+                    port:
+                      type: integer
+                      minimum: 1
+                    user:
+                      type: string
+                vpn:
+                  type: object
+                  nullable: true
+                  properties:
+                    addressV4:
+                      type: string
+                      pattern: '^[0-9.]+$'
+                      nullable: true
+                      description: the IPv4 address assigned to the node's VPN interface.
+                    addressV6:
+                      type: string
+                      pattern: '^[a-f0-9:]+$'
+                      nullable: true
+                      description: the IPv6 address assigned to the node's VPN interface.
+                    endpointAddress:
+                      type: string
+                      pattern: '^[a-f0-9.:]+$'
+                      nullable: true
+                      description: the public IPv4/v6 address of the node.
+                    endpointPort:
+                      type: integer
+                      minimum: 1
+                      nullable: true
+                      description: the port on which WireGuard is listening.
+                    publicKey:
+                      type: string
+                      description: the WireGuard public key of the node's VPN interface (Base64 encoded).
                 limitations:
                   type: array
                   nullable: true
@@ -77,19 +114,6 @@ spec:
                       identifier:
                         type: string
                         pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
-                vpn:
-                  type: object
-                  nullable: true
-                  properties:
-                    addresses:
-                      type: array
-                      items:
-                        type: string
-                        pattern: '[a-f0-9.:]+'
-                      description: a list of IPv4/v6 addresses assigned to the node's VPN interface.
-                    publicKey:
-                      type: string
-                      description: the WireGuard public key of the node's VPN interface (Base64 encoded).
             status:
               type: object
               properties:

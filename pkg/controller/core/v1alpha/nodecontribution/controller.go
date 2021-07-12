@@ -314,12 +314,12 @@ func (c *Controller) init(nodecontribution *corev1alpha.NodeContribution) {
 	// Set the client config according to the node contribution,
 	// with the maximum time of 15 seconds to establist the connection.
 	config := &ssh.ClientConfig{
-		User:            nodecontributionCopy.Spec.User,
+		User:            nodecontributionCopy.Spec.SSH.User,
 		Auth:            []ssh.AuthMethod{ssh.PublicKeys(c.publicKey)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         15 * time.Second,
 	}
-	addr := fmt.Sprintf("%s:%d", nodecontributionCopy.Spec.Host, nodecontributionCopy.Spec.Port)
+	addr := fmt.Sprintf("%s:%d", nodecontributionCopy.Spec.Host, nodecontributionCopy.Spec.SSH.Port)
 	contributedNode, err := c.nodesLister.Get(nodeName)
 
 	if err == nil {

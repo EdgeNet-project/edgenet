@@ -190,10 +190,9 @@ type NodeContribution struct {
 type NodeContributionSpec struct {
 	Tenant      *string       `json:"tenant"`
 	Host        string        `json:"host"`
-	Port        int           `json:"port"`
-	User        string        `json:"user"`
 	Enabled     bool          `json:"enabled"`
 	Limitations []Limitations `json:"limitations"`
+	SSH         SSH           `json:"ssh"`
 	VPN         *VPN          `json:"vpn"`
 }
 
@@ -203,10 +202,19 @@ type Limitations struct {
 	Indentifier string `json:"identifier"`
 }
 
+// SSH describes the node's SSH configuration
+type SSH struct {
+	Port int    `json:"port"`
+	User string `json:"user"`
+}
+
 // VPN describes the node's WireGuard interface configuration
 type VPN struct {
-	Addresses []string `json:"addresses"`
-	PublicKey string   `json:"publicKey"`
+	AddressV4       *string `json:"addressV4"`
+	AddressV6       *string `json:"addressV6"`
+	EndpointAddress *string `json:"endpointAddress"`
+	EndpointPort    *int    `json:"endpointPort"`
+	PublicKey       string  `json:"publicKey"`
 }
 
 // NodeContributionStatus is the status for a node contribution
