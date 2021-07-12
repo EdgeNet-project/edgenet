@@ -77,6 +77,19 @@ spec:
                       identifier:
                         type: string
                         pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
+                vpn:
+                  type: object
+                  nullable: true
+                  properties:
+                    addresses:
+                      type: array
+                      items:
+                        type: string
+                        pattern: '[a-f0-9.:]+'
+                      description: a list of IPv4/v6 addresses assigned to the node's VPN interface.
+                    publicKey:
+                      type: string
+                      description: the WireGuard public key of the node's VPN interface (Base64 encoded).
             status:
               type: object
               properties:

@@ -194,12 +194,19 @@ type NodeContributionSpec struct {
 	User        string        `json:"user"`
 	Enabled     bool          `json:"enabled"`
 	Limitations []Limitations `json:"limitations"`
+	VPN         *VPN          `json:"vpn"`
 }
 
 // Limitations describes which tenants and namespaces can make use of node
 type Limitations struct {
 	Kind        string `json:"kind"`
 	Indentifier string `json:"identifier"`
+}
+
+// VPN describes the node's WireGuard interface configuration
+type VPN struct {
+	Addresses []string `json:"addresses"`
+	PublicKey string   `json:"publicKey"`
 }
 
 // NodeContributionStatus is the status for a node contribution
