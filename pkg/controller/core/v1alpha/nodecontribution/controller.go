@@ -491,6 +491,7 @@ nodeSetupLoop:
 			}
 			establishConnection <- true
 		case <-establishConnection:
+			// TODO: Wait for the VPN connection to be established?
 			klog.V(4).Infof("Establish SSH connection: %s", nodeName)
 			go func() {
 				conn, err = ssh.Dial("tcp", addr, config)
