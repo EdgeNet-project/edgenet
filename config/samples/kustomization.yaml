@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- multitenancy.edge-net.io_v1_tenant.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples
