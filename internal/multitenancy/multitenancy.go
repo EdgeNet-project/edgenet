@@ -70,7 +70,7 @@ func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *v1.Ten
 		return err
 	}
 
-	// Print the newly created namespace
+	// Now allocate resources for specified as in the initial request
 	fmt.Printf("CREATED NAMESPACE!: %v\n", coreNamespaceName)
 
 	return nil

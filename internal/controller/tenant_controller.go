@@ -22,14 +22,14 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	multitenancyedgenetiov1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
 	v1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
-	"github.com/ubombar/edgenet-kubebuilder/internal/multitenancy"
+	util "github.com/ubombar/edgenet-kubebuilder/internal"
 )
 
 // TenantReconciler reconciles a Tenant object
@@ -38,9 +38,49 @@ type TenantReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=multitenancy.edge-net.io.edge-net.io,resources=tenants,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=multitenancy.edge-net.io.edge-net.io,resources=tenants/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=multitenancy.edge-net.io.edge-net.io,resources=tenants/finalizers,verbs=update
+// Boilerplate code.
+// This is used to retrieve the object with finalizers. In case of any error the error != nil. In case of a requeue request, bool=true. Else
+// returns the obj.
+// return tuple -> (tenant, isDeleted, requeque, error)
+// Note that, if isDeleted is true you need to remove the finalizer from the object to release it.
+func (r *TenantReconciler) GetResourceWithFinalizer(ctx context.Context, namespacedName types.NamespacedName) (*v1.Tenant, bool, bool, error) {
+	objOld := &v1.Tenant{}
+	if err := r.Get(ctx, namespacedName, objOld); err != nil {
+		if errors.IsNotFound(err) {
+			return nil, false, false, nil
+		}
+		return nil, false, true, err
+	}
+
+	obj := objOld.DeepCopy()
+
+	// If the object is not marked for deletion
+	if obj.DeletionTimestamp.IsZero() && !util.ContainsFinalizer(obj.ObjectMeta.Finalizers, "edge-net.io/controller") {
+		obj.ObjectMeta.Finalizers = append(obj.ObjectMeta.Finalizers, "edge-net.io/controller")
+
+		if err := r.Update(ctx, obj); err != nil {
+			return nil, false, true, err
+		}
+	}
+
+	return obj, !obj.DeletionTimestamp.IsZero(), false, nil
+}
+
+func (r *TenantReconciler) ReleaseResource(ctx context.Context, obj *v1.Tenant) error {
+	objCopy := obj.DeepCopy()
+
+	objCopy.ObjectMeta.Finalizers = util.RemoveFinalizer(objCopy.ObjectMeta.Finalizers, "edge-net.io/controller")
+
+	if err := r.Update(ctx, objCopy.DeepCopy()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenants,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenants/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenants/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -52,40 +92,21 @@ type TenantReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
 func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	// Get the object, isDeleted, requeque, and error
+	tenant, isDeleted, requeque, err := r.GetResourceWithFinalizer(ctx, req.NamespacedName)
 
-	multitenancyManager, err := multitenancy.NewMultiTenancyManager(ctx, r.Client)
-
-	if err != nil {
-		return reconcile.Result{}, nil
+	if tenant == nil {
+		return reconcile.Result{Requeue: requeque}, err
 	}
 
-	// Initialize the empty tenant object
-	tenant := v1.Tenant{}
+	fmt.Printf("(tenant == nil)=%v, isDeleted=%v\n", tenant == nil, isDeleted)
 
-	// If the resource cannot be found then it means it is either deleted or there is a io error.
-	// Requeue if it is not a not found error.
-	if err := r.Get(ctx, req.NamespacedName, &tenant); err != nil {
-		if errors.IsNotFound(err) {
-			return reconcile.Result{}, nil
-		}
-		return ctrl.Result{
-			Requeue: false,
-		}, err
+	// You need to release the resource if it is marked for deletion
+	if isDeleted {
+		err := r.ReleaseResource(ctx, tenant)
+		return reconcile.Result{}, err
 	}
-
-	// // Check if the object is marked for deletion
-	// if !tenant.DeletionTimestamp.IsZero() {
-	// }
-
-	err = multitenancyManager.CreateCoreNamespace(ctx, &tenant)
-	fmt.Printf("err: %v\n", err)
-
-	fmt.Printf("successfully retrieved the tenant %q\n", tenant.Spec.FullName)
-
-	return ctrl.Result{
-		Requeue: false,
-	}, nil
+	return ctrl.Result{}, nil
 }
 
 func (r *TenantReconciler) OnDeletion(t *v1.Tenant) (ctrl.Result, error) {

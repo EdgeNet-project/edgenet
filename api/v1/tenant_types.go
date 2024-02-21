@@ -49,7 +49,7 @@ type TenantSpec struct {
 	// This represents the initial resource allocation for the tenant. If not specified, the tenant resource
 	// quota will not be created.
 	// +kubebuilder:validation:Optional
-	ResourceAllocation map[corev1.ResourceName]resource.Quantity `json:"resourceAllocation"`
+	InitialRequest map[corev1.ResourceName]resource.Quantity `json:"initialRequest"`
 
 	// Whether cluster-level network policies will be applied to tenant namespaces for security purposes.
 	// +kubebuilder:default=false
@@ -77,8 +77,7 @@ type TenantStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster
-// +kubebuilder:printcolumn:name="Official Name",type="string",JSONPath=".spec.fullname"
-// +kubebuilder:printcolumn:name="Short Name",type="string",JSONPath=".spec.shortname"
+// +kubebuilder:printcolumn:name="Full Name",type="string",JSONPath=".spec.fullName"
 // +kubebuilder:printcolumn:name="URL",type="string",JSONPath=".spec.url"
 // +kubebuilder:printcolumn:name="Email",type="string",JSONPath=".spec.email"
 // +kubebuilder:printcolumn:name="Enabled",type="boolean",JSONPath=".spec.enabled"
