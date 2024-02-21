@@ -18,13 +18,18 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	multitenancyedgenetiov1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
+	v1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
+	"github.com/ubombar/edgenet-kubebuilder/internal/multitenancy"
 )
 
 // TenantReconciler reconciles a Tenant object
@@ -49,9 +54,46 @@ type TenantReconciler struct {
 func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	multitenancyManager, err := multitenancy.NewMultiTenancyManager(ctx, r.Client)
 
-	return ctrl.Result{}, nil
+	if err != nil {
+		return reconcile.Result{}, nil
+	}
+
+	// Initialize the empty tenant object
+	tenant := v1.Tenant{}
+
+	// If the resource cannot be found then it means it is either deleted or there is a io error.
+	// Requeue if it is not a not found error.
+	if err := r.Get(ctx, req.NamespacedName, &tenant); err != nil {
+		if errors.IsNotFound(err) {
+			return reconcile.Result{}, nil
+		}
+		return ctrl.Result{
+			Requeue: false,
+		}, err
+	}
+
+	// // Check if the object is marked for deletion
+	// if !tenant.DeletionTimestamp.IsZero() {
+	// }
+
+	err = multitenancyManager.CreateCoreNamespace(ctx, &tenant)
+	fmt.Printf("err: %v\n", err)
+
+	fmt.Printf("successfully retrieved the tenant %q\n", tenant.Spec.FullName)
+
+	return ctrl.Result{
+		Requeue: false,
+	}, nil
+}
+
+func (r *TenantReconciler) OnDeletion(t *v1.Tenant) (ctrl.Result, error) {
+	return reconcile.Result{}, nil
+}
+
+func (r *TenantReconciler) OnUpdate(t *v1.Tenant) (ctrl.Result, error) {
+	return reconcile.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
