@@ -46,6 +46,8 @@ type TenantSpec struct {
 	// +kubebuilder:validation:MaxLength=2000
 	URL string `json:"url"`
 
+	// This represents the initial resource allocation for the tenant. If not specified, the tenant resource
+	// quota will not be created.
 	// +kubebuilder:validation:Optional
 	ResourceAllocation map[corev1.ResourceName]resource.Quantity `json:"resourceAllocation"`
 

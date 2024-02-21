@@ -79,6 +79,9 @@ spec:
                   - type: string
                   pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                   x-kubernetes-int-or-string: true
+                description: This represents the initial resource allocation for the
+                  tenant. If not specified, the tenant resource quota will not be
+                  created.
                 type: object
               url:
                 description: Website of the tenant.
