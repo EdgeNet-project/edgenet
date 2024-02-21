@@ -112,3 +112,35 @@ func ReleaseResource(ctx context.Context, c client.Client, obj *v1.Tenant) (reco
 
 // 	return obj, !obj.GetDeletionTimestamp().IsZero(), reconcile.Result{Requeue: false}, nil
 // }
+
+func GenericGetResourceWithFinalizer(ctx context.Context, c client.Client, obj client.Object, namespacedName types.NamespacedName) (bool, ctrl.Result, error) {
+	if err := c.Get(ctx, namespacedName, obj); err != nil {
+		if errors.IsNotFound(err) {
+			return false, reconcile.Result{}, nil
+		}
+		return false, reconcile.Result{Requeue: true}, err
+	}
+
+	// objCopy := obj.DeepCopyObject()
+
+	// If the object is not marked for deletion
+	if obj.GetDeletionTimestamp().IsZero() && !ContainsFinalizer(obj.GetFinalizers(), "edge-net.io/controller") {
+		obj.SetFinalizers(append(obj.GetFinalizers(), "edge-net.io/controller"))
+
+		if err := c.Update(ctx, obj); err != nil {
+			return false, reconcile.Result{Requeue: true}, err
+		}
+	}
+
+	return !obj.GetDeletionTimestamp().IsZero(), reconcile.Result{Requeue: false}, nil
+}
+
+func GenericReleaseResource(ctx context.Context, c client.Client, obj client.Object) (reconcile.Result, error) {
+	obj.SetFinalizers(RemoveFinalizer(obj.GetFinalizers(), "edge-net.io/controller"))
+
+	if err := c.Update(ctx, obj); err != nil {
+		return reconcile.Result{}, err
+	}
+
+	return reconcile.Result{}, nil
+}
