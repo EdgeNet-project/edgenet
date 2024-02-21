@@ -20,28 +20,66 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // TenantSpec defines the desired state of Tenant
 type TenantSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Full name of the tenant.
+	// +kubebuilder:validation:MaxLength=40
+	// +kubebuilder:validation:Required
+	FullName string `json:"fullname"`
 
-	// Foo is an example field of Tenant. Edit tenant_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Shortened name of the tenant.
+	// +kubebuilder:validation:MaxLength=80
+	// +kubebuilder:validation:Required
+	ShortName string `json:"shortname"`
+
+	// Description provides additional information about the tenant.
+	// +kubebuilder:validation:MaxLength=200
+	// +kubebuilder:validation:Optional
+	Description string `json:"description"`
+
+	// Email provides a contact email for the tenant.
+	// +kubebuilder:validation:MaxLength=200
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Pattern=`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$`
+	Email string `json:"email"`
+
+	// Website of the tenant.
+	// +kubebuilder:validation:Pattern=`^(https?://)?([\da-z\.-]+)\.([a-z\.]{2,6})([/\w \.-]*)*/?$`
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MaxLength=2000
+	URL string `json:"url"`
+
+	// Whether cluster-level network policies will be applied to tenant namespaces for security purposes.
+	// +kubebuilder:default=false
+	// +kubebuilder:validation:Optional
+	ClusterNetworkPolicy bool `json:"clusternetworkpolicy"`
+
+	// If the tenant is active then this field is true.
+	// +kubebuilder:validation:Required
+	Enabled bool `json:"enabled"`
 }
 
 // TenantStatus defines the observed state of Tenant
 type TenantStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// The state can be Established or Failed.
+	State string `json:"state"`
+
+	// Additional description can be located here.
+	Message string `json:"message"`
+
+	// Failed sets the backoff limit.
+	Failed int `json:"failed"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-
 // Tenant is the Schema for the tenants API
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:printcolumn:name="Official Name",type="string",JSONPath=".spec.fullname"
+// +kubebuilder:printcolumn:name="Short Name",type="string",JSONPath=".spec.shortname"
+// +kubebuilder:printcolumn:name="URL",type="string",JSONPath=".spec.url"
+// +kubebuilder:printcolumn:name="Email",type="string",JSONPath=".spec.email"
+// +kubebuilder:printcolumn:name="Enabled",type="boolean",JSONPath=".spec.enabled"
 type Tenant struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -50,7 +88,7 @@ type Tenant struct {
 	Status TenantStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 
 // TenantList contains a list of Tenant
 type TenantList struct {
