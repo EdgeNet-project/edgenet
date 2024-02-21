@@ -23,34 +23,15 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
-	util "github.com/ubombar/edgenet-kubebuilder/internal"
+	utils "github.com/ubombar/edgenet-kubebuilder/internal"
 )
 
 // TenantReconciler reconciles a Tenant object
 type TenantReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
-}
-
-// Boilerplate code.
-// This is used to retrieve the object with finalizers. In case of any error the error != nil. In case of a requeue request, bool=true. Else
-// returns the obj.
-// return tuple -> (tenant, isDeleted, requeque, error)
-// Note that, if isDeleted is true you need to remove the finalizer from the object to release it.
-
-func (r *TenantReconciler) ReleaseResource(ctx context.Context, obj *v1.Tenant) (reconcile.Result, error) {
-	objCopy := obj.DeepCopy()
-
-	objCopy.ObjectMeta.Finalizers = util.RemoveFinalizer(objCopy.ObjectMeta.Finalizers, "edge-net.io/controller")
-
-	if err := r.Update(ctx, objCopy.DeepCopy()); err != nil {
-		return reconcile.Result{}, err
-	}
-
-	return reconcile.Result{}, nil
 }
 
 //+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenants,verbs=get;list;watch;create;update;patch;delete
@@ -67,7 +48,7 @@ func (r *TenantReconciler) ReleaseResource(ctx context.Context, obj *v1.Tenant) 
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
 func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	tenant, isDeleted, result, err := util.GetResourceWithFinalizer(ctx, r.Client, req.NamespacedName)
+	tenant, isDeleted, result, err := utils.GetResourceWithFinalizer(ctx, r.Client, req.NamespacedName)
 
 	if tenant == nil {
 		return result, err
@@ -77,7 +58,7 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	// You need to release the resource if it is marked for deletion
 	if isDeleted {
-		return r.ReleaseResource(ctx, tenant)
+		return utils.ReleaseResource(ctx, r.Client, tenant)
 	}
 	return ctrl.Result{}, nil
 }

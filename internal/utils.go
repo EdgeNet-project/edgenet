@@ -1,4 +1,4 @@
-package util
+package utils
 
 import (
 	"context"
@@ -76,6 +76,18 @@ func GetResourceWithFinalizer(ctx context.Context, c client.Client, namespacedNa
 	}
 
 	return objCopy, !objCopy.GetDeletionTimestamp().IsZero(), reconcile.Result{Requeue: false}, nil
+}
+
+func ReleaseResource(ctx context.Context, c client.Client, obj *v1.Tenant) (reconcile.Result, error) {
+	objCopy := obj.DeepCopy()
+
+	objCopy.ObjectMeta.Finalizers = RemoveFinalizer(objCopy.ObjectMeta.Finalizers, "edge-net.io/controller")
+
+	if err := c.Update(ctx, objCopy.DeepCopy()); err != nil {
+		return reconcile.Result{}, err
+	}
+
+	return reconcile.Result{}, nil
 }
 
 // TODO Try to nmake this generic
