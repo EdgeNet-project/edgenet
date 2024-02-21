@@ -1,5 +1,16 @@
 package util
 
+import (
+	"context"
+
+	v1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+)
+
 func ContainsFinalizer(finalizers []string, finalizer string) bool {
 	for _, item := range finalizers {
 		if item == finalizer {
@@ -19,3 +30,73 @@ func RemoveFinalizer(finalizers []string, finalizer string) []string {
 	// Return the original slice if the string is not found.
 	return finalizers
 }
+
+// func GetResourceWithFinalizer(ctx context.Context, c client.Client, namespacedName types.NamespacedName) (*v1.Tenant, bool, ctrl.Result, error) {
+// 	objOld := &v1.Tenant{}
+// 	if err := c.Get(ctx, namespacedName, objOld); err != nil {
+// 		if errors.IsNotFound(err) {
+// 			return nil, false, reconcile.Result{}, nil
+// 		}
+// 		return nil, false, reconcile.Result{Requeue: true}, err
+// 	}
+
+// 	obj := objOld.DeepCopy()
+
+// 	// If the object is not marked for deletion
+// 	if obj.DeletionTimestamp.IsZero() && !ContainsFinalizer(obj.ObjectMeta.Finalizers, "edge-net.io/controller") {
+// 		obj.ObjectMeta.Finalizers = append(obj.ObjectMeta.Finalizers, "edge-net.io/controller")
+
+// 		if err := c.Update(ctx, obj); err != nil {
+// 			return nil, false, reconcile.Result{Requeue: true}, err
+// 		}
+// 	}
+
+// 	return obj, !obj.DeletionTimestamp.IsZero(), reconcile.Result{Requeue: false}, nil
+// }
+
+func GetResourceWithFinalizer(ctx context.Context, c client.Client, namespacedName types.NamespacedName) (*v1.Tenant, bool, ctrl.Result, error) {
+	obj := &v1.Tenant{}
+
+	if err := c.Get(ctx, namespacedName, obj); err != nil {
+		if errors.IsNotFound(err) {
+			return nil, false, reconcile.Result{}, nil
+		}
+		return nil, false, reconcile.Result{Requeue: true}, err
+	}
+
+	objCopy := obj.DeepCopy()
+
+	// If the object is not marked for deletion
+	if objCopy.GetDeletionTimestamp().IsZero() && !ContainsFinalizer(objCopy.GetFinalizers(), "edge-net.io/controller") {
+		objCopy.SetFinalizers(append(objCopy.GetFinalizers(), "edge-net.io/controller"))
+
+		if err := c.Update(ctx, objCopy); err != nil {
+			return nil, false, reconcile.Result{Requeue: true}, err
+		}
+	}
+
+	return objCopy, !objCopy.GetDeletionTimestamp().IsZero(), reconcile.Result{Requeue: false}, nil
+}
+
+// TODO Try to nmake this generic
+// func GetResourceWithFinalizer[T client.Object](ctx context.Context, c client.Client, namespacedName types.NamespacedName) (T, bool, ctrl.Result, error) {
+// 	obj := *new(T)
+
+// 	if err := c.Get(ctx, namespacedName, obj); err != nil {
+// 		if errors.IsNotFound(err) {
+// 			return nil, false, reconcile.Result{}, nil
+// 		}
+// 		return nil, false, reconcile.Result{Requeue: true}, err
+// 	}
+
+// 	// If the object is not marked for deletion
+// 	if obj.GetDeletionTimestamp().IsZero() && !ContainsFinalizer(obj.GetFinalizers(), "edge-net.io/controller") {
+// 		obj.SetFinalizers(append(obj.GetFinalizers(), "edge-net.io/controller"))
+
+// 		if err := c.Update(ctx, obj); err != nil {
+// 			return nil, false, reconcile.Result{Requeue: true}, err
+// 		}
+// 	}
+
+// 	return obj, !obj.GetDeletionTimestamp().IsZero(), reconcile.Result{Requeue: false}, nil
+// }

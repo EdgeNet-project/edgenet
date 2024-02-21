@@ -20,14 +20,11 @@ import (
 	"context"
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	multitenancyedgenetiov1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
 	v1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
 	util "github.com/ubombar/edgenet-kubebuilder/internal"
 )
@@ -43,39 +40,17 @@ type TenantReconciler struct {
 // returns the obj.
 // return tuple -> (tenant, isDeleted, requeque, error)
 // Note that, if isDeleted is true you need to remove the finalizer from the object to release it.
-func (r *TenantReconciler) GetResourceWithFinalizer(ctx context.Context, namespacedName types.NamespacedName) (*v1.Tenant, bool, bool, error) {
-	objOld := &v1.Tenant{}
-	if err := r.Get(ctx, namespacedName, objOld); err != nil {
-		if errors.IsNotFound(err) {
-			return nil, false, false, nil
-		}
-		return nil, false, true, err
-	}
 
-	obj := objOld.DeepCopy()
-
-	// If the object is not marked for deletion
-	if obj.DeletionTimestamp.IsZero() && !util.ContainsFinalizer(obj.ObjectMeta.Finalizers, "edge-net.io/controller") {
-		obj.ObjectMeta.Finalizers = append(obj.ObjectMeta.Finalizers, "edge-net.io/controller")
-
-		if err := r.Update(ctx, obj); err != nil {
-			return nil, false, true, err
-		}
-	}
-
-	return obj, !obj.DeletionTimestamp.IsZero(), false, nil
-}
-
-func (r *TenantReconciler) ReleaseResource(ctx context.Context, obj *v1.Tenant) error {
+func (r *TenantReconciler) ReleaseResource(ctx context.Context, obj *v1.Tenant) (reconcile.Result, error) {
 	objCopy := obj.DeepCopy()
 
 	objCopy.ObjectMeta.Finalizers = util.RemoveFinalizer(objCopy.ObjectMeta.Finalizers, "edge-net.io/controller")
 
 	if err := r.Update(ctx, objCopy.DeepCopy()); err != nil {
-		return err
+		return reconcile.Result{}, err
 	}
 
-	return nil
+	return reconcile.Result{}, nil
 }
 
 //+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenants,verbs=get;list;watch;create;update;patch;delete
@@ -92,19 +67,17 @@ func (r *TenantReconciler) ReleaseResource(ctx context.Context, obj *v1.Tenant) 
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
 func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	// Get the object, isDeleted, requeque, and error
-	tenant, isDeleted, requeque, err := r.GetResourceWithFinalizer(ctx, req.NamespacedName)
+	tenant, isDeleted, result, err := util.GetResourceWithFinalizer(ctx, r.Client, req.NamespacedName)
 
 	if tenant == nil {
-		return reconcile.Result{Requeue: requeque}, err
+		return result, err
 	}
 
 	fmt.Printf("(tenant == nil)=%v, isDeleted=%v\n", tenant == nil, isDeleted)
 
 	// You need to release the resource if it is marked for deletion
 	if isDeleted {
-		err := r.ReleaseResource(ctx, tenant)
-		return reconcile.Result{}, err
+		return r.ReleaseResource(ctx, tenant)
 	}
 	return ctrl.Result{}, nil
 }
@@ -112,6 +85,6 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 // SetupWithManager sets up the controller with the Manager.
 func (r *TenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&multitenancyedgenetiov1.Tenant{}).
+		For(&v1.Tenant{}).
 		Complete(r)
 }
