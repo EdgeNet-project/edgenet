@@ -36,7 +36,19 @@ func NewMultiTenancyManager(ctx context.Context, client client.Client) (MultiTen
 }
 
 func (m *multiTenancyManager) SafeRemoveTenant(ctx context.Context, t *v1.Tenant) error {
-	panic("haven't implemented yet")
+	// Get the corenamespace name
+	coreNamespaceName := ResolveCoreNamespaceName(t.Name)
+	coreNamespaceObjectKey := client.ObjectKey{Name: coreNamespaceName}
+
+	// Create the namespace
+	coreNamespace := corev1.Namespace{}
+	err := m.client.Get(ctx, coreNamespaceObjectKey, &coreNamespace)
+
+	if err != nil {
+		return err
+	}
+
+	return m.client.Delete(ctx, &coreNamespace)
 }
 
 func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *v1.Tenant) error {

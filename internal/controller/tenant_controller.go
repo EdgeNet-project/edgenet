@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -26,6 +25,7 @@ import (
 
 	v1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
 	utils "github.com/ubombar/edgenet-kubebuilder/internal"
+	"github.com/ubombar/edgenet-kubebuilder/internal/multitenancy"
 )
 
 // TenantReconciler reconciles a Tenant object
@@ -48,19 +48,31 @@ type TenantReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
 func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	var tenant *v1.Tenant
-	isDeleted, result, err := utils.GetResourceWithFinalizer(ctx, r.Client, tenant, req.NamespacedName)
+	tenant := v1.Tenant{}
+	isMarkedForDeletion, reconcileResult, err := utils.GetResourceWithFinalizer(ctx, r.Client, &tenant, req.NamespacedName)
 
-	if tenant == nil {
-		return result, err
+	if utils.IsObjectUninitialized(&tenant) {
+		return reconcileResult, err
 	}
 
-	fmt.Printf("(tenant == nil)=%v, isDeleted=%v\n", tenant.Name, isDeleted)
+	multiTenancyManager, err := multitenancy.NewMultiTenancyManager(ctx, r.Client)
 
-	// You need to release the resource if it is marked for deletion
-	if isDeleted {
-		return utils.RemoveFinalizer(ctx, r.Client, tenant)
+	if err != nil {
+		return ctrl.Result{}, err
 	}
+
+	if isMarkedForDeletion {
+		if err := multiTenancyManager.SafeRemoveTenant(ctx, &tenant); err != nil {
+			return ctrl.Result{Requeue: true}, err
+		} else {
+			return utils.RemoveFinalizer(ctx, r.Client, &tenant)
+		}
+	} else {
+		if err := multiTenancyManager.CreateCoreNamespace(ctx, &tenant); err != nil {
+			return ctrl.Result{Requeue: true}, err
+		}
+	}
+
 	return ctrl.Result{}, nil
 }
 

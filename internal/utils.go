@@ -31,6 +31,7 @@ func removeFinalizer(finalizers []string, finalizer string) []string {
 }
 
 // Gets the requested object, adds a finalizer if not already present.
+// returns (isMarkedForDeletion, reconcileResult, err)
 func GetResourceWithFinalizer(ctx context.Context, c client.Client, obj client.Object, namespacedName types.NamespacedName) (bool, ctrl.Result, error) {
 	if err := c.Get(ctx, namespacedName, obj); err != nil {
 		if errors.IsNotFound(err) {
@@ -60,4 +61,9 @@ func RemoveFinalizer(ctx context.Context, c client.Client, obj client.Object) (r
 	}
 
 	return reconcile.Result{}, nil
+}
+
+// Check if the UID of the object is initialized.
+func IsObjectUninitialized(obj client.Object) bool {
+	return obj.GetUID() == ""
 }
