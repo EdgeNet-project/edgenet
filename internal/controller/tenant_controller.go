@@ -49,7 +49,7 @@ type TenantReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
 func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var tenant *v1.Tenant
-	isDeleted, result, err := utils.GenericGetResourceWithFinalizer(ctx, r.Client, tenant, req.NamespacedName)
+	isDeleted, result, err := utils.GetResourceWithFinalizer(ctx, r.Client, tenant, req.NamespacedName)
 
 	if tenant == nil {
 		return result, err
@@ -59,7 +59,7 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	// You need to release the resource if it is marked for deletion
 	if isDeleted {
-		return utils.GenericReleaseResource(ctx, r.Client, tenant)
+		return utils.RemoveFinalizer(ctx, r.Client, tenant)
 	}
 	return ctrl.Result{}, nil
 }
