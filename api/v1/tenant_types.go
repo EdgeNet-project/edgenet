@@ -17,20 +17,17 @@ limitations under the License.
 package v1
 
 import (
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // TenantSpec defines the desired state of Tenant
 type TenantSpec struct {
 	// Full name of the tenant.
-	// +kubebuilder:validation:MaxLength=40
-	// +kubebuilder:validation:Required
-	FullName string `json:"fullname"`
-
-	// Shortened name of the tenant.
 	// +kubebuilder:validation:MaxLength=80
 	// +kubebuilder:validation:Required
-	ShortName string `json:"shortname"`
+	FullName string `json:"fullName"`
 
 	// Description provides additional information about the tenant.
 	// +kubebuilder:validation:MaxLength=200
@@ -49,10 +46,13 @@ type TenantSpec struct {
 	// +kubebuilder:validation:MaxLength=2000
 	URL string `json:"url"`
 
+	// +kubebuilder:validation:Optional
+	ResourceAllocation map[corev1.ResourceName]resource.Quantity `json:"resourceAllocation"`
+
 	// Whether cluster-level network policies will be applied to tenant namespaces for security purposes.
 	// +kubebuilder:default=false
 	// +kubebuilder:validation:Optional
-	ClusterNetworkPolicy bool `json:"clusternetworkpolicy"`
+	ClusterNetworkPolicy bool `json:"clusterNetworkPolicy"`
 
 	// If the tenant is active then this field is true.
 	// +kubebuilder:validation:Required
