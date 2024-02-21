@@ -109,14 +109,6 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	return ctrl.Result{}, nil
 }
 
-func (r *TenantReconciler) OnDeletion(t *v1.Tenant) (ctrl.Result, error) {
-	return reconcile.Result{}, nil
-}
-
-func (r *TenantReconciler) OnUpdate(t *v1.Tenant) (ctrl.Result, error) {
-	return reconcile.Result{}, nil
-}
-
 // SetupWithManager sets up the controller with the Manager.
 func (r *TenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
