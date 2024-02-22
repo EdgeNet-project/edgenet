@@ -51,7 +51,7 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	tenant := v1.Tenant{}
 	isMarkedForDeletion, reconcileResult, err := utils.GetResourceWithFinalizer(ctx, r.Client, &tenant, req.NamespacedName)
 
-	if utils.IsObjectUninitialized(&tenant) {
+	if !utils.IsObjectInitialized(&tenant) {
 		return reconcileResult, err
 	}
 
@@ -65,7 +65,7 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		if err := multiTenancyManager.SafeRemoveTenant(ctx, &tenant); err != nil {
 			return ctrl.Result{Requeue: true}, err
 		} else {
-			return utils.RemoveFinalizer(ctx, r.Client, &tenant)
+			return utils.AllowObjectDeletion(ctx, r.Client, &tenant)
 		}
 	} else {
 		if err := multiTenancyManager.CreateCoreNamespace(ctx, &tenant); err != nil {

@@ -10,6 +10,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
+// Check a string exists in a list of strings
 func containsFinalizer(finalizers []string, finalizer string) bool {
 	for _, item := range finalizers {
 		if item == finalizer {
@@ -19,6 +20,7 @@ func containsFinalizer(finalizers []string, finalizer string) bool {
 	return false
 }
 
+// Remove a string from a list of strings
 func removeFinalizer(finalizers []string, finalizer string) []string {
 	for i, item := range finalizers {
 		if item == finalizer {
@@ -30,9 +32,11 @@ func removeFinalizer(finalizers []string, finalizer string) []string {
 	return finalizers
 }
 
-// Gets the requested object, adds a finalizer if not already present.
-// returns (isMarkedForDeletion, reconcileResult, err)
+// Gets the object from by using the given client c and the address of the obj as well as namespacedName variable.
+// Populates the obj variable if the object exists.
+// Return values are (isDeleted, response, error)
 func GetResourceWithFinalizer(ctx context.Context, c client.Client, obj client.Object, namespacedName types.NamespacedName) (bool, ctrl.Result, error) {
+	// Get the object from the cluster
 	if err := c.Get(ctx, namespacedName, obj); err != nil {
 		if errors.IsNotFound(err) {
 			return false, reconcile.Result{}, nil
@@ -40,7 +44,7 @@ func GetResourceWithFinalizer(ctx context.Context, c client.Client, obj client.O
 		return false, reconcile.Result{Requeue: true}, err
 	}
 
-	// If the object is not marked for deletion
+	// If the object is not marked for deletion and doesn't contain the finalizer
 	if obj.GetDeletionTimestamp().IsZero() && !containsFinalizer(obj.GetFinalizers(), "edge-net.io/controller") {
 		obj.SetFinalizers(append(obj.GetFinalizers(), "edge-net.io/controller"))
 
@@ -49,11 +53,18 @@ func GetResourceWithFinalizer(ctx context.Context, c client.Client, obj client.O
 		}
 	}
 
+	// First return represent if the object is marked for deletion,
+	// Second is the reconsitiation result without requeue.
+	// Third is the error which is nil in this case.
 	return !obj.GetDeletionTimestamp().IsZero(), reconcile.Result{Requeue: false}, nil
 }
 
-// Removes the finalizer from the object.
-func RemoveFinalizer(ctx context.Context, c client.Client, obj client.Object) (reconcile.Result, error) {
+// Normally when a Kubernetes object is deleted it is no longer accessible from the etcd. To retrieve the last state
+// of the object finalizers are used. GetResourceWithFinalizer function adds a finalizer to the resource if not present.
+// These finalizers are then can used to keep the object in the cluster after it is marked for deletion.
+// AllowObjectDeletion method removes the edge-net.io/controller finalizer. By this way the object can be completely removed
+// from the cluster.
+func AllowObjectDeletion(ctx context.Context, c client.Client, obj client.Object) (reconcile.Result, error) {
 	obj.SetFinalizers(removeFinalizer(obj.GetFinalizers(), "edge-net.io/controller"))
 
 	if err := c.Update(ctx, obj); err != nil {
@@ -63,7 +74,8 @@ func RemoveFinalizer(ctx context.Context, c client.Client, obj client.Object) (r
 	return reconcile.Result{}, nil
 }
 
-// Check if the UID of the object is initialized.
-func IsObjectUninitialized(obj client.Object) bool {
+// Checks if the given object is an initializer kubernetes object. This is done by checking the UID of the object.
+// If it is an empty string (default value for UID) then it is not initialized and returns false. Otherwise true.
+func IsObjectInitialized(obj client.Object) bool {
 	return obj.GetUID() == ""
 }

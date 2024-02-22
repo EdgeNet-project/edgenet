@@ -2,7 +2,6 @@ package multitenancy
 
 import (
 	"context"
-	"fmt"
 
 	v1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -83,7 +82,6 @@ func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *v1.Ten
 	}
 
 	// Now allocate resources for specified as in the initial request
-	fmt.Printf("CREATED NAMESPACE!: %v\n", coreNamespaceName)
 
 	return nil
 }
