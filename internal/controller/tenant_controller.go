@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -52,8 +53,11 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	isMarkedForDeletion, reconcileResult, err := utils.GetResourceWithFinalizer(ctx, r.Client, &tenant, req.NamespacedName)
 
 	if !utils.IsObjectInitialized(&tenant) {
+		fmt.Println("reconciled with nil tenant")
 		return reconcileResult, err
 	}
+
+	fmt.Println("reconciled")
 
 	multiTenancyManager, err := multitenancy.NewMultiTenancyManager(ctx, r.Client)
 
@@ -62,13 +66,15 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	if isMarkedForDeletion {
+		// Do a cleanup and allow tenant object for deletion
 		if err := multiTenancyManager.TenantCleanup(ctx, &tenant); err != nil {
 			return ctrl.Result{Requeue: true}, err
-		} else {
-			return utils.AllowObjectDeletion(ctx, r.Client, &tenant)
 		}
+
+		return utils.AllowObjectDeletion(ctx, r.Client, &tenant)
 	} else {
-		if err := multiTenancyManager.CreateCoreNamespace(ctx, &tenant); err != nil {
+		// Create a core namespace for the tenant.
+		if err := multiTenancyManager.CreateCoreNamespaceLocal(ctx, &tenant); err != nil {
 			return ctrl.Result{Requeue: true}, err
 		}
 	}

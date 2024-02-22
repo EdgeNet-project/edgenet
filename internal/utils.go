@@ -2,7 +2,9 @@ package utils
 
 import (
 	"context"
+	"fmt"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -35,6 +37,18 @@ func removeFinalizer(finalizers []string, finalizer string) []string {
 // Gets the object from by using the given client c and the address of the obj as well as namespacedName variable.
 // Populates the obj variable if the object exists.
 // Return values are (isDeleted, response, error)
+// Intended use:
+//
+//	tenant := &v1.Tenant{}
+//	isMarkedForDeletion, res, err := utils.GetResourceWithFinalizer(
+//		ctx,
+//		client,
+//		tenant,
+//		namespacedName)
+//
+//	if !utils.IsObjectInitialized(tenant) {
+//		return res, err
+//	}
 func GetResourceWithFinalizer(ctx context.Context, c client.Client, obj client.Object, namespacedName types.NamespacedName) (bool, ctrl.Result, error) {
 	// Get the object from the cluster
 	if err := c.Get(ctx, namespacedName, obj); err != nil {
@@ -67,6 +81,7 @@ func GetResourceWithFinalizer(ctx context.Context, c client.Client, obj client.O
 func AllowObjectDeletion(ctx context.Context, c client.Client, obj client.Object) (reconcile.Result, error) {
 	obj.SetFinalizers(removeFinalizer(obj.GetFinalizers(), "edge-net.io/controller"))
 
+	fmt.Println("finalizing")
 	if err := c.Update(ctx, obj); err != nil {
 		return reconcile.Result{}, err
 	}
@@ -77,5 +92,16 @@ func AllowObjectDeletion(ctx context.Context, c client.Client, obj client.Object
 // Checks if the given object is an initializer kubernetes object. This is done by checking the UID of the object.
 // If it is an empty string (default value for UID) then it is not initialized and returns false. Otherwise true.
 func IsObjectInitialized(obj client.Object) bool {
-	return obj.GetUID() == ""
+	return obj.GetUID() != ""
+}
+
+// Gets the UID of the kube-system namesapce. This namespace is considered a unique identifier of the cluster.
+func GetClusterUID(ctx context.Context, client client.Client) (types.UID, error) {
+	namespace := corev1.Namespace{}
+	err := client.Get(ctx, types.NamespacedName{Name: "kube-system"}, &namespace)
+	if err != nil {
+		return types.UID(""), err
+	}
+
+	return namespace.GetUID(), nil
 }
