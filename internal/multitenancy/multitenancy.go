@@ -16,7 +16,7 @@ import (
 type MultiTenancyManager interface {
 	// Remove the tenant and all of the other artifacts created with it including,
 	// subtenants, subnamespaces etc.
-	SafeRemoveTenant(context.Context, *v1.Tenant) error
+	TenantCleanup(context.Context, *v1.Tenant) error
 
 	// Creates a core namespace (same name with the tenant) and sets the resource allocation.
 	// Returns nil, if the namespace already exists.
@@ -34,7 +34,7 @@ func NewMultiTenancyManager(ctx context.Context, client client.Client) (MultiTen
 	}, nil
 }
 
-func (m *multiTenancyManager) SafeRemoveTenant(ctx context.Context, t *v1.Tenant) error {
+func (m *multiTenancyManager) TenantCleanup(ctx context.Context, t *v1.Tenant) error {
 	// Get the corenamespace name
 	coreNamespaceName := ResolveCoreNamespaceName(t.Name)
 	coreNamespaceObjectKey := client.ObjectKey{Name: coreNamespaceName}

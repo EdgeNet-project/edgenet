@@ -62,7 +62,7 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	if isMarkedForDeletion {
-		if err := multiTenancyManager.SafeRemoveTenant(ctx, &tenant); err != nil {
+		if err := multiTenancyManager.TenantCleanup(ctx, &tenant); err != nil {
 			return ctrl.Result{Requeue: true}, err
 		} else {
 			return utils.AllowObjectDeletion(ctx, r.Client, &tenant)
