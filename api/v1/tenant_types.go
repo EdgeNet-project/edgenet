@@ -34,11 +34,13 @@ type TenantSpec struct {
 	// +kubebuilder:validation:Optional
 	Description string `json:"description"`
 
-	// Email provides a contact email for the tenant.
+	// This is the admin username for the tenant. A role binding will be created for user with this username.
+	// The username for some cases can also be emails. This was the old method. But with different identity
+	// providers this can be any name.
 	// +kubebuilder:validation:MaxLength=200
 	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:Pattern=`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$`
-	Email string `json:"email"`
+	// +kubebuilder:validation:Pattern=`^([a-zA-Z0-9._%+-]+@)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$`
+	Admin string `json:"admin"`
 
 	// Website of the tenant.
 	// +kubebuilder:validation:Pattern=`^(https?://)?([\da-z\.-]+)\.([a-z\.]{2,6})([/\w \.-]*)*/?$`

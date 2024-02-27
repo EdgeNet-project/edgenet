@@ -47,6 +47,14 @@ spec:
           spec:
             description: TenantSpec defines the desired state of Tenant
             properties:
+              admin:
+                description: This is the admin username for the tenant. A role binding
+                  will be created for user with this username. The username for some
+                  cases can also be emails. This was the old method. But with different
+                  identity providers this can be any name.
+                maxLength: 200
+                pattern: ^([a-zA-Z0-9._%+-]+@)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$
+                type: string
               clusterNetworkPolicy:
                 default: false
                 description: Whether cluster-level network policies will be applied
@@ -56,11 +64,6 @@ spec:
                 description: Description provides additional information about the
                   tenant.
                 maxLength: 200
-                type: string
-              email:
-                description: Email provides a contact email for the tenant.
-                maxLength: 200
-                pattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$
                 type: string
               enabled:
                 description: If the tenant is active then this field is true.
@@ -86,7 +89,7 @@ spec:
                 pattern: ^(https?://)?([\da-z\.-]+)\.([a-z\.]{2,6})([/\w \.-]*)*/?$
                 type: string
             required:
-            - email
+            - admin
             - enabled
             - fullName
             - url
