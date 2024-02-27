@@ -35,6 +35,7 @@ type TenantReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+// These are required to have the permissions.
 //+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenants,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenants/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenants/finalizers,verbs=update
