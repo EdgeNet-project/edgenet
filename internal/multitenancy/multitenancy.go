@@ -6,6 +6,7 @@ import (
 	v1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
 	utils "github.com/ubombar/edgenet-kubebuilder/internal"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -26,6 +27,10 @@ type MultiTenancyManager interface {
 
 	// Same as the CreateCoreNamespace except gets the UID from local cluster.
 	CreateCoreNamespaceLocal(ctx context.Context, t *v1.Tenant) error
+
+	// Creates a new tenant role binding with admin priviliages. Requires "edgenet:tenant-admin" role
+	// to work.
+	CreateTenantAdminRoleBinding(ctx context.Context, t *v1.Tenant) error
 }
 
 type multiTenancyManager struct {
@@ -73,7 +78,7 @@ func (m *multiTenancyManager) CreateCoreNamespaceLocal(ctx context.Context, t *v
 // The clusterUID is given as a future federation concept.
 func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *v1.Tenant, clusterUID types.UID) error {
 	// Get the corenamespace name
-	coreNamespaceName := ResolveCoreNamespaceName(t.Name)
+	coreNamespaceName := utils.ResolveCoreNamespaceName(t.Name)
 	coreNamespaceObjectKey := client.ObjectKey{Name: coreNamespaceName}
 
 	// Create the namespace
@@ -119,5 +124,50 @@ func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *v1.Ten
 
 	// Set the resource quota for the namespace
 
+	return nil
+}
+
+// This creates a role binding for the tenant. The role binding will be created inside the core namespace of the
+// tenant. By this way the tenant's permissions will be contained inside the core namespace.
+func (m *multiTenancyManager) CreateTenantAdminRoleBinding(ctx context.Context, t *v1.Tenant) error {
+	// Retrieve the role bingind, if already exists, do nothing.
+	roleBinding := &rbacv1.RoleBinding{}
+	err := m.client.Get(ctx,
+		types.NamespacedName{
+			// The name of the rolebinding should be TenantAdminRoleName and Namespace should be core namespace
+			Name:      v1.TenantAdminRoleName,
+			Namespace: utils.ResolveCoreNamespaceName(t.GetName()),
+		}, roleBinding)
+
+	// If it doesn't exsist then create it.
+	if err != nil {
+		// Create the role binding
+		if errors.IsNotFound(err) {
+			roleBinding = &rbacv1.RoleBinding{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      v1.TenantAdminRoleName,
+					Namespace: utils.ResolveCoreNamespaceName(t.GetName()),
+					Labels: map[string]string{
+						"edge-net.io/generated":    "true",
+						"edge-net.io/notification": "true",
+					},
+				},
+				Subjects: []rbacv1.Subject{
+					{
+						Kind:     "User",
+						APIGroup: "rbac.authorization.k8s.io",
+						Name:     t.Spec.Admin,
+					},
+				},
+				RoleRef: rbacv1.RoleRef{
+					Kind: "ClusterRole",
+					Name: v1.TenantAdminRoleName,
+				},
+			}
+
+			return m.client.Create(ctx, roleBinding)
+		}
+		return err
+	}
 	return nil
 }

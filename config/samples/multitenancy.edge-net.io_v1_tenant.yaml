@@ -10,7 +10,7 @@ metadata:
   name: ubombar
 spec:
   fullName: Ufuk Bombar
-  admin: ufukbombar@gmail.com
+  admin: ubombar
   url: ufukbombar.com
   enabled: true
   initialRequest:

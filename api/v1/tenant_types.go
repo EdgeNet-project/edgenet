@@ -22,6 +22,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const TenantAdminRoleName = "edgenet:tenant-admin"
+
 // TenantSpec defines the desired state of Tenant
 type TenantSpec struct {
 	// Full name of the tenant.
@@ -39,7 +41,8 @@ type TenantSpec struct {
 	// providers this can be any name.
 	// +kubebuilder:validation:MaxLength=200
 	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:Pattern=`^([a-zA-Z0-9._%+-]+@)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$`
+	// +kubebuilder:validation:Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`
+	// old+kubebuilder:validation:Pattern=`^([a-zA-Z0-9._%+-]+@)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$`
 	Admin string `json:"admin"`
 
 	// Website of the tenant.

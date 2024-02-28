@@ -51,9 +51,9 @@ spec:
                 description: This is the admin username for the tenant. A role binding
                   will be created for user with this username. The username for some
                   cases can also be emails. This was the old method. But with different
-                  identity providers this can be any name.
+                  identity providers this can be any name. old+kubebuilder:validation:Pattern=`^([a-zA-Z0-9._%+-]+@)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$`
                 maxLength: 200
-                pattern: ^([a-zA-Z0-9._%+-]+@)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$
+                pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
                 type: string
               clusterNetworkPolicy:
                 default: false

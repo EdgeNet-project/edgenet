@@ -79,6 +79,11 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		if err := multiTenancyManager.CreateCoreNamespaceLocal(ctx, &tenant); err != nil {
 			return ctrl.Result{Requeue: true}, err
 		}
+
+		// Create the role binding in the core namespace of the tenant.
+		if err := multiTenancyManager.CreateTenantAdminRoleBinding(ctx, &tenant); err != nil {
+			return ctrl.Result{Requeue: true}, err
+		}
 	}
 
 	return ctrl.Result{}, nil
