@@ -17,4 +17,13 @@ resources:
   kind: Tenant
   path: github.com/ubombar/edgenet-kubebuilder/api/v1
   version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: edge-net.io
+  group: multitenancy.edge-net.io
+  kind: TenantResourceQuota
+  path: github.com/ubombar/edgenet-kubebuilder/api/v1
+  version: v1
 version: "3"
