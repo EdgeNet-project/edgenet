@@ -25,8 +25,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	v1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
-	utils "github.com/ubombar/edgenet-kubebuilder/internal"
-	"github.com/ubombar/edgenet-kubebuilder/internal/multitenancy"
+	"github.com/ubombar/edgenet-kubebuilder/pkg/multitenancy/v1"
+	"github.com/ubombar/edgenet-kubebuilder/pkg/utils"
 )
 
 // TenantReconciler reconciles a Tenant object
