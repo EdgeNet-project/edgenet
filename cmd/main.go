@@ -32,6 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
+	antreav1alpha1 "antrea.io/antrea/pkg/apis/crd/v1alpha1"
 	multitenancyedgenetiov1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
 	"github.com/ubombar/edgenet-kubebuilder/internal/controller"
 	//+kubebuilder:scaffold:imports
@@ -47,6 +48,9 @@ func init() {
 
 	utilruntime.Must(multitenancyedgenetiov1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
+
+	// Add atrea objects to the scheme
+	utilruntime.Must(antreav1alpha1.AddToScheme(scheme))
 }
 
 func main() {
