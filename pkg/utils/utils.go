@@ -14,7 +14,7 @@ import (
 
 // Resolve the core-namespace from tenant name (simply take the object name)
 func ResolveCoreNamespaceName(tenantName string) string {
-	return fmt.Sprintf("%s", tenantName)
+	return tenantName
 }
 
 // Check a string exists in a list of strings
