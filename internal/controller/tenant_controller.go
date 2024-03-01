@@ -84,6 +84,13 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		if err := multiTenancyManager.CreateTenantAdminRoleBinding(ctx, &tenant); err != nil {
 			return ctrl.Result{Requeue: true}, err
 		}
+
+		// Create the network policy. This restricts pod communication. Don't need to clean after
+		// deletion of the tenant.
+		if err := multiTenancyManager.CreateTenantNetworkPolicy(ctx, &tenant); err != nil {
+			return ctrl.Result{Requeue: true}, err
+		}
+
 	}
 
 	return ctrl.Result{}, nil

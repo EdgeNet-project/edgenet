@@ -3,13 +3,16 @@ package multitenancy
 import (
 	"context"
 
+	antreav1alpha1 "antrea.io/antrea/pkg/apis/crd/v1alpha1"
 	v1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
 	"github.com/ubombar/edgenet-kubebuilder/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -31,6 +34,9 @@ type MultiTenancyManager interface {
 	// Creates a new tenant role binding with admin priviliages. Requires "edgenet:tenant-admin" role
 	// to work.
 	CreateTenantAdminRoleBinding(ctx context.Context, t *v1.Tenant) error
+
+	// Create the network policy. If specified creates the cluster network policy as well.
+	CreateTenantNetworkPolicy(ctx context.Context, t *v1.Tenant) error
 }
 
 type multiTenancyManager struct {
@@ -169,5 +175,156 @@ func (m *multiTenancyManager) CreateTenantAdminRoleBinding(ctx context.Context, 
 		}
 		return err
 	}
+	return nil
+}
+
+// Create the network policy, if specified in the tenant create the cluster network policy as well.
+func (m *multiTenancyManager) CreateTenantNetworkPolicy(ctx context.Context, t *v1.Tenant) error {
+	clusterUID, err := utils.GetClusterUID(ctx, m.client)
+	if err != nil {
+		return err
+	}
+
+	port := intstr.IntOrString{IntVal: 1}
+	endPort := int32(32768)
+	labelSelector := metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			"edge-net.io/subtenant":   "false",
+			"edge-net.io/tenant":      t.GetName(),
+			"edge-net.io/tenant-uid":  string(t.GetUID()),
+			"edge-net.io/cluster-uid": string(clusterUID),
+		},
+	}
+
+	// Create a new network policy object.
+	networkPolicy := &networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			// The name is fixed to baseline
+			Name: "baseline",
+			// Create the policy in the tenant's core namespace
+			Namespace: utils.ResolveCoreNamespaceName(t.GetName()),
+		},
+		Spec: networkingv1.NetworkPolicySpec{
+			PolicyTypes: []networkingv1.PolicyType{"Ingress"},
+			Ingress: []networkingv1.NetworkPolicyIngressRule{
+				{
+					From: []networkingv1.NetworkPolicyPeer{
+						{
+							NamespaceSelector: &labelSelector,
+						},
+						{
+							IPBlock: &networkingv1.IPBlock{
+								CIDR:   "0.0.0.0/0",
+								Except: []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"},
+							},
+						},
+					},
+					Ports: []networkingv1.NetworkPolicyPort{
+						{
+							Port:    &port,
+							EndPort: &endPort,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// Only return if there is an error other than already exists
+	if err = m.client.Create(ctx, networkPolicy); err != nil && !errors.IsAlreadyExists(err) {
+		return err
+	}
+
+	ownerReferences := []metav1.OwnerReference{
+		*metav1.NewControllerRef(t, t.GroupVersionKind()),
+	}
+	dropAction := antreav1alpha1.RuleActionDrop
+	allowAction := antreav1alpha1.RuleActionAllow
+
+	clusterNetworkPolicy := antreav1alpha1.ClusterNetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "baseline",
+			OwnerReferences: ownerReferences,
+		},
+		Spec: antreav1alpha1.ClusterNetworkPolicySpec{
+			Tier:     "tenant",
+			Priority: 5,
+			AppliedTo: []antreav1alpha1.AppliedTo{
+				{
+					NamespaceSelector: &labelSelector,
+				},
+			},
+			Ingress: []antreav1alpha1.Rule{
+				{
+					Action: &allowAction,
+					From: []antreav1alpha1.NetworkPolicyPeer{
+						{
+							NamespaceSelector: &labelSelector,
+						},
+					},
+					Ports: []antreav1alpha1.NetworkPolicyPort{
+						{
+							Port:    &port,
+							EndPort: &endPort,
+						},
+					},
+				},
+				{
+					Action: &dropAction,
+					From: []antreav1alpha1.NetworkPolicyPeer{
+						{
+							IPBlock: &antreav1alpha1.IPBlock{
+								CIDR: "10.0.0.0/8",
+							},
+						},
+						{
+							IPBlock: &antreav1alpha1.IPBlock{
+								CIDR: "172.16.0.0/12",
+							},
+						},
+						{
+							IPBlock: &antreav1alpha1.IPBlock{
+								CIDR: "192.168.0.0/16",
+							},
+						},
+					},
+					Ports: []antreav1alpha1.NetworkPolicyPort{
+						{
+							Port:    &port,
+							EndPort: &endPort,
+						},
+					},
+				},
+				{
+					Action: &allowAction,
+					From: []antreav1alpha1.NetworkPolicyPeer{
+						{
+							IPBlock: &antreav1alpha1.IPBlock{
+								CIDR: "0.0.0.0/0",
+							},
+						},
+					},
+					Ports: []antreav1alpha1.NetworkPolicyPort{
+						{
+							Port:    &port,
+							EndPort: &endPort,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// Check if in the tenant spec the cluster network policy is requested. If this is false, try to delete the policy if it exist.
+	if t.Spec.ClusterNetworkPolicy {
+		if err = m.client.Create(ctx, &clusterNetworkPolicy); err != nil && !errors.IsAlreadyExists(err) {
+			return err
+		}
+	} else {
+		if err = m.client.Delete(ctx, &clusterNetworkPolicy); err != nil && !errors.IsNotFound(err) {
+			return err
+		}
+	}
+
 	return nil
 }
