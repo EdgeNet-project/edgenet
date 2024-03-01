@@ -35,6 +35,7 @@ import (
 	antreav1alpha1 "antrea.io/antrea/pkg/apis/crd/v1alpha1"
 	multitenancyedgenetiov1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
 	"github.com/ubombar/edgenet-kubebuilder/internal/controller"
+	"github.com/ubombar/edgenet-kubebuilder/pkg/utils"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -57,8 +58,11 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
+	var disabledReconcilers utils.FlagList
+
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.Var(&disabledReconcilers, "disabled-reconcilers", "Comma seperated values of the reconciliers, Tenant,TenantResourceQuota,SubNamespace...")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -93,19 +97,27 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controller.TenantReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Tenant")
-		os.Exit(1)
+	// Setup reconcilers, we might want to add the list of reconcilers. This part is auto generated.
+	// If you want to add the functionality to disable reconcilers, put it inside an if.
+	// WARNING: This part is semi-auto-generated! By default you cannot disable reconcilers since they are
+	// generated autside an if clause.
+	if !disabledReconcilers.Contains("Tenant") {
+		if err = (&controller.TenantReconciler{
+			Client: mgr.GetClient(),
+			Scheme: mgr.GetScheme(),
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "Tenant")
+			os.Exit(1)
+		}
 	}
-	if err = (&controller.TenantResourceQuotaReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "TenantResourceQuota")
-		os.Exit(1)
+	if !disabledReconcilers.Contains("TenantResourceQuota") {
+		if err = (&controller.TenantResourceQuotaReconciler{
+			Client: mgr.GetClient(),
+			Scheme: mgr.GetScheme(),
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "TenantResourceQuota")
+			os.Exit(1)
+		}
 	}
 	//+kubebuilder:scaffold:builder
 

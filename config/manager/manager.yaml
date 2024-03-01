@@ -70,6 +70,8 @@ spec:
         - /manager
         args:
         - --leader-elect
+        # You can disable certain reconcilers by adding them to a comma seperated list.
+        # - --disabled-reconcilers=""
         image: controller:latest
         name: manager
         securityContext:

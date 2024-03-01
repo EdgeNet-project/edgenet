@@ -12,6 +12,29 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
+// Define a custom type that implements the flag.Value interface
+type FlagList []string
+
+// Implement the Set method for the flag.Value interface
+func (s *FlagList) Set(value string) error {
+	*s = append(*s, value)
+	return nil
+}
+
+// Implement the String method for the flag.Value interface
+func (s *FlagList) String() string {
+	return fmt.Sprintf("%v", *s)
+}
+
+func (s *FlagList) Contains(flag string) bool {
+	for _, f := range *s {
+		if f == flag {
+			return true
+		}
+	}
+	return false
+}
+
 // Resolve the core-namespace from tenant name (simply take the object name)
 func ResolveCoreNamespaceName(tenantName string) string {
 	return tenantName
