@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -55,11 +54,8 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	isMarkedForDeletion, reconcileResult, err := utils.GetResourceWithFinalizer(ctx, r.Client, &tenant, req.NamespacedName)
 
 	if !utils.IsObjectInitialized(&tenant) {
-		fmt.Println("reconciled with nil tenant")
 		return reconcileResult, err
 	}
-
-	fmt.Println("reconciled")
 
 	multiTenancyManager, err := multitenancy.NewMultiTenancyManager(ctx, r.Client)
 

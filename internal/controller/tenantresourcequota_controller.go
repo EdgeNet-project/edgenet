@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -51,7 +50,6 @@ func (r *TenantResourceQuotaReconciler) Reconcile(ctx context.Context, req ctrl.
 	_ = log.FromContext(ctx)
 
 	// TODO(user): your logic here
-	fmt.Println("Working...")
 
 	return ctrl.Result{}, nil
 }
