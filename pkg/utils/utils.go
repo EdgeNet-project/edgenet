@@ -12,9 +12,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-// Resolve the core-namespace from tenant name (simply take the object name and add prefix "core-")
+// Resolve the core-namespace from tenant name (simply take the object name)
 func ResolveCoreNamespaceName(tenantName string) string {
-	return fmt.Sprintf("core-%s", tenantName)
+	return fmt.Sprintf("%s", tenantName)
 }
 
 // Check a string exists in a list of strings
