@@ -67,7 +67,7 @@ spec:
         #   type: RuntimeDefault
       containers:
       - command:
-        - /manager
+        - ./manager
         args:
         - --leader-elect
         # You can disable certain reconcilers by adding them to a comma seperated list.

@@ -11,7 +11,7 @@ metadata:
 spec:
   fullName: Ufuk Bombar
   admin: ubombar
-  url: ufukbombar.com
+  url: ufukbombar.com.tr
   enabled: true
   initialRequest:
     memory: "64Mi"

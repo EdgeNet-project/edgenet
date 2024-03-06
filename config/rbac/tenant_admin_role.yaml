@@ -13,102 +13,114 @@ metadata:
   name: edgenet:tenant-admin
 rules:
 - apiGroups:
-  - core.edgenet.io
+  - multitenancy.edge-net.io
   resources:
-  - subnamespaces
-  - sliceclaims
+  - tenants
   verbs:
-  - '*'
-- apiGroups:
-  - core.edgenet.io
-  resources:
-  - subnamespaces/status
-  verbs:
+  - create
+  - delete
   - get
   - list
+  - patch
+  - update
   - watch
-- apiGroups:
-  - apps.edgenet.io
-  resources:
-  - selectivedeployments
-  verbs:
-  - '*'
-- apiGroups:
-  - registration.edgenet.io
-  resources:
-  - rolerequests
-  verbs:
-  - '*'
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
-  - roles
-  - rolebindings
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  - endpoints
-  - persistentvolumeclaims
-  - pods
-  - pods/exec
-  - pods/log
-  - pods/attach
-  - pods/portforward
-  - replicationcontrollers
-  - services
-  - secrets
-  - serviceaccounts
-  verbs:
-  - '*'
-- apiGroups:
-  - apps
-  resources:
-  - daemonsets
-  - deployments
-  - replicasets
-  - statefulsets
-  verbs:
-  - '*'
-- apiGroups:
-  - autoscaling
-  resources:
-  - horizontalpodautoscalers
-  verbs:
-  - '*'
-- apiGroups:
-  - batch
-  resources:
-  - cronjobs
-  - jobs
-  verbs:
-  - '*'
-- apiGroups:
-  - extensions
-  resources:
-  - daemonsets
-  - deployments
-  - ingresses
-  - networkpolicies
-  - replicasets
-  - replicationcontrollers
-  verbs:
-  - '*'
-- apiGroups:
-  - networking.k8s.io
-  resources:
-  - ingresses
-  - networkpolicies
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
-  - events
-  - controllerrevisions
-  verbs:
-  - get
-  - list
-  - watch
+
+#   - core.edgenet.io
+#   resources:
+#   - subnamespaces
+#   - sliceclaims
+#   verbs:
+#   - '*'
+# - apiGroups:
+#   - core.edgenet.io
+#   resources:
+#   - subnamespaces/status
+#   verbs:
+#   - get
+#   - list
+#   - watch
+# - apiGroups:
+#   - apps.edgenet.io
+#   resources:
+#   - selectivedeployments
+#   verbs:
+#   - '*'
+# - apiGroups:
+#   - registration.edgenet.io
+#   resources:
+#   - rolerequests
+#   verbs:
+#   - '*'
+# - apiGroups:
+#   - rbac.authorization.k8s.io
+#   resources:
+#   - roles
+#   - rolebindings
+#   verbs:
+#   - '*'
+# - apiGroups:
+#   - ""
+#   resources:
+#   - configmaps
+#   - endpoints
+#   - persistentvolumeclaims
+#   - pods
+#   - pods/exec
+#   - pods/log
+#   - pods/attach
+#   - pods/portforward
+#   - replicationcontrollers
+#   - services
+#   - secrets
+#   - serviceaccounts
+#   verbs:
+#   - '*'
+# - apiGroups:
+#   - apps
+#   resources:
+#   - daemonsets
+#   - deployments
+#   - replicasets
+#   - statefulsets
+#   verbs:
+#   - '*'
+# - apiGroups:
+#   - autoscaling
+#   resources:
+#   - horizontalpodautoscalers
+#   verbs:
+#   - '*'
+# - apiGroups:
+#   - batch
+#   resources:
+#   - cronjobs
+#   - jobs
+#   verbs:
+#   - '*'
+# - apiGroups:
+#   - extensions
+#   resources:
+#   - daemonsets
+#   - deployments
+#   - ingresses
+#   - networkpolicies
+#   - replicasets
+#   - replicationcontrollers
+#   verbs:
+#   - '*'
+# - apiGroups:
+#   - networking.k8s.io
+#   resources:
+#   - ingresses
+#   - networkpolicies
+#   verbs:
+#   - '*'
+# - apiGroups:
+#   - ""
+#   resources:
+#   - events
+#   - controllerrevisions
+#   verbs:
+#   - get
+#   - list
+#   - watch
