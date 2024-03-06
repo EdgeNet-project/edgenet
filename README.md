@@ -50,3 +50,7 @@ To chat with a member of the EdgeNet team live, please [open our tawk.to window]
 # Contributing
 
 The EdgeNet software is free and open source, licensed under the [Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0); we invite you to contribute. You can access [contribution guide](/docs/guides/contribution_guides.md) for more information on how to contribute.
+
+```bash
+make docker-build docker-push IMG=ubombar/edgenet-controller:latest && make install deploy IMG=ubombar/edgenet-controller:latest
+```
