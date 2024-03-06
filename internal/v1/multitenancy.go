@@ -5,7 +5,7 @@ import (
 
 	antreav1alpha1 "antrea.io/antrea/pkg/apis/crd/v1alpha1"
 	v1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
-	"github.com/ubombar/edgenet-kubebuilder/pkg/utils"
+	"github.com/ubombar/edgenet-kubebuilder/internal/utils"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"

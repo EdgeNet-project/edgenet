@@ -24,8 +24,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	v1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
-	"github.com/ubombar/edgenet-kubebuilder/pkg/multitenancy/v1"
-	"github.com/ubombar/edgenet-kubebuilder/pkg/utils"
+	"github.com/ubombar/edgenet-kubebuilder/internal/utils"
+	multitenancy "github.com/ubombar/edgenet-kubebuilder/internal/v1"
 )
 
 // TenantReconciler reconciles a Tenant object
@@ -36,7 +36,10 @@ type TenantReconciler struct {
 
 // These are required to have the permissions.
 //+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenants,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update
+//+kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=rolebindings,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="networking.k8s.io",resources=networkpolicies;clusternetworkpolicies,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="crd.antrea.io",resources=clusternetworkpolicies,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenants/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenants/finalizers,verbs=update
 

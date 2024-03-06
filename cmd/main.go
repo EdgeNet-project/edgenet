@@ -35,7 +35,7 @@ import (
 	antreav1alpha1 "antrea.io/antrea/pkg/apis/crd/v1alpha1"
 	multitenancyedgenetiov1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
 	"github.com/ubombar/edgenet-kubebuilder/internal/controller"
-	"github.com/ubombar/edgenet-kubebuilder/pkg/utils"
+	"github.com/ubombar/edgenet-kubebuilder/internal/utils"
 	//+kubebuilder:scaffold:imports
 )
 
