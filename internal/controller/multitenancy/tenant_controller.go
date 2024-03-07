@@ -23,6 +23,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
 	"github.com/edgenet-project/edgenet-software/internal/multitenancy/v1"
@@ -55,6 +56,7 @@ type TenantReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
 func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	logger := log.FromContext(ctx)
 	tenant := multitenancyv1.Tenant{}
 	isMarkedForDeletion, reconcileResult, err := utils.GetResourceWithFinalizer(ctx, r.Client, &tenant, req.NamespacedName)
 
@@ -65,6 +67,7 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	multiTenancyManager, err := multitenancy.NewMultiTenancyManager(ctx, r.Client)
 
 	if err != nil {
+		logger.Error(err, "cannot create multitenancy manager")
 		return ctrl.Result{}, err
 	}
 
