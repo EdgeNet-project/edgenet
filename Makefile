@@ -160,11 +160,7 @@ undeploy: kustomize ## Undeploy controller from the K8s cluster specified in ~/.
 
 .PHONY: generate-installer
 generate-installer: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
-	# First get the CRDs
-	$(KUSTOMIZE) build config/crd >> $(YAML_PATH)
-	$(KUSTOMIZE) build config/rbac >> $(YAML_PATH)
-
-	# Then append the deployer
+	rm -f $(YAML_PATH)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default >> $(YAML_PATH)
 
