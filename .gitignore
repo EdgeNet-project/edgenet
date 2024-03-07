@@ -21,7 +21,7 @@ go.work
 !vendor/**/zz_generated.*
 
 # Ignore installation yamls
-yamls/install.yaml
+build/*
 
 # editor and IDE paraphernalia
 .idea
@@ -29,3 +29,4 @@ yamls/install.yaml
 *.swp
 *.swo
 *~
+

@@ -1,6 +1,7 @@
 
 # Image URL to use all building/pushing image targets
 IMG ?= edgenetio/edgenet-controller:latest
+YAML_PATH=build/installer.yaml
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.29.0
 # This should be same as the antrea version in go.mod file since it is using that version in the library.
@@ -157,6 +158,16 @@ undeploy: kustomize ## Undeploy controller from the K8s cluster specified in ~/.
 	$(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f https://github.com/antrea-io/antrea/releases/download/${ANTREA_VERSION}/antrea.yml
 	$(KUSTOMIZE) build config/default | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
+.PHONY: generate-installer
+generate-installer: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
+	# First get the CRDs
+	$(KUSTOMIZE) build config/crd >> $(YAML_PATH)
+	$(KUSTOMIZE) build config/rbac >> $(YAML_PATH)
+
+	# Then append the deployer
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build config/default >> $(YAML_PATH)
+
 ##@ Dependencies
 
 ## Location to install dependencies to
@@ -210,3 +221,4 @@ GOBIN=$(LOCALBIN) go install $${package} ;\
 mv "$$(echo "$(1)" | sed "s/-$(3)$$//")" $(1) ;\
 }
 endef
+
