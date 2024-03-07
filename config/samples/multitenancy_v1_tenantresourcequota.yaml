@@ -1,0 +1,12 @@
+apiVersion: multitenancy.edge-net.io/v1
+kind: TenantResourceQuota
+metadata:
+  labels:
+    app.kubernetes.io/name: tenantresourcequota
+    app.kubernetes.io/instance: tenantresourcequota-sample
+    app.kubernetes.io/part-of: edgenet
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: edgenet
+  name: tenantresourcequota-sample
+spec:
+  # TODO(user): Add fields here
