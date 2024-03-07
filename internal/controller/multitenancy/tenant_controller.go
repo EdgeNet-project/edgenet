@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -31,7 +32,8 @@ import (
 // TenantReconciler reconciles a Tenant object
 type TenantReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme   *runtime.Scheme
+	recorder record.EventRecorder
 }
 
 // These are required to have the permissions.
@@ -69,6 +71,7 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	if isMarkedForDeletion {
 		// Do a cleanup and allow tenant object for deletion
 		if err := multiTenancyManager.TenantCleanup(ctx, &tenant); err != nil {
+			utils.RecordEventError(r.recorder, &tenant, "Tenant cleanup failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 
@@ -76,27 +79,33 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	} else {
 		// Create a core namespace for the tenant.
 		if err := multiTenancyManager.CreateCoreNamespaceLocal(ctx, &tenant); err != nil {
+			utils.RecordEventError(r.recorder, &tenant, "Tenant Core Namespace creation failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 
 		// Create the role binding in the core namespace of the tenant.
 		if err := multiTenancyManager.CreateTenantAdminRoleBinding(ctx, &tenant); err != nil {
+			utils.RecordEventError(r.recorder, &tenant, "Tenant admin role binding failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 
 		// Create the network policy. This restricts pod communication. Don't need to clean after
 		// deletion of the tenant.
 		if err := multiTenancyManager.CreateTenantNetworkPolicy(ctx, &tenant); err != nil {
+			utils.RecordEventError(r.recorder, &tenant, "Tenant antrea network policy failed")
 			return ctrl.Result{Requeue: true}, err
 		}
-
 	}
 
+	utils.RecordEventInfo(r.recorder, &tenant, "Tenant reconciliation successfull")
 	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *TenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// Setup the event recorder
+	r.recorder = utils.GetEventRecorder(mgr)
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&multitenancyv1.Tenant{}).
 		Complete(r)
