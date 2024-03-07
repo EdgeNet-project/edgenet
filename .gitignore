@@ -20,6 +20,9 @@ go.work
 # Kubernetes Generated files - skip generated files, except for vendored files
 !vendor/**/zz_generated.*
 
+# Ignore installation yamls
+yamls/install.yaml
+
 # editor and IDE paraphernalia
 .idea
 .vscode
