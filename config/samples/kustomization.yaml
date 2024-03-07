@@ -2,4 +2,5 @@
 resources:
 - multitenancy_v1_tenant.yaml
 - multitenancy_v1_tenantresourcequota.yaml
+- apps_v1_selectivedeployment.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

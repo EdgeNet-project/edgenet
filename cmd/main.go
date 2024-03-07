@@ -34,7 +34,9 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
+	appsv1 "github.com/edgenet-project/edgenet-software/api/apps/v1"
 	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
+	appscontroller "github.com/edgenet-project/edgenet-software/internal/controller/apps"
 	multitenancycontroller "github.com/edgenet-project/edgenet-software/internal/controller/multitenancy"
 	//+kubebuilder:scaffold:imports
 )
@@ -48,6 +50,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(multitenancyv1.AddToScheme(scheme))
+	utilruntime.Must(appsv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -134,6 +137,13 @@ func main() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TenantResourceQuota")
+		os.Exit(1)
+	}
+	if err = (&appscontroller.SelectiveDeploymentReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "SelectiveDeployment")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder
