@@ -4,18 +4,18 @@ metadata:
   labels:
     control-plane: controller-manager
     app.kubernetes.io/name: namespace
-    app.kubernetes.io/instance: system
+    app.kubernetes.io/instance: edgenet-system
     app.kubernetes.io/component: manager
     app.kubernetes.io/created-by: edgenet
     app.kubernetes.io/part-of: edgenet
     app.kubernetes.io/managed-by: kustomize
-  name: system
+  name: edgenet-system
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: controller-manager
-  namespace: system
+  namespace: edgenet-system
   labels:
     control-plane: controller-manager
     app.kubernetes.io/name: deployment
