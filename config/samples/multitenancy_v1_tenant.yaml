@@ -7,6 +7,12 @@ metadata:
     app.kubernetes.io/part-of: edgenet
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: edgenet
-  name: tenant-sample
+  name: ubombar
 spec:
-  # TODO(user): Add fields here
+  fullName: Ufuk Bombar
+  admin: ubombar
+  url: ufukbombar.com.tr
+  enabled: true
+  initialRequest:
+    memory: "64Mi"
+    cpu: "500m"
