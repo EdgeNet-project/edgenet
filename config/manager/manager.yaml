@@ -15,7 +15,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: controller-manager
-  namespace: kube-system
+  namespace: system
   labels:
     control-plane: controller-manager
     app.kubernetes.io/name: deployment
@@ -67,11 +67,9 @@ spec:
         #   type: RuntimeDefault
       containers:
       - command:
-        - ./manager
+        - /manager
         args:
         - --leader-elect
-        # You can disable certain reconcilers by adding them to a comma seperated list.
-        # - --disabled-reconcilers=""
         image: controller:latest
         name: manager
         securityContext:
