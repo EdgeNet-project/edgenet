@@ -22,24 +22,17 @@ import (
 
 // SelectiveDeploymentSpec defines the desired state of SelectiveDeployment
 type SelectiveDeploymentSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of SelectiveDeployment. Edit selectivedeployment_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
 }
 
 // SelectiveDeploymentStatus defines the observed state of SelectiveDeployment
 type SelectiveDeploymentStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 }
 
+// SelectiveDeployment is the Schema for the selectivedeployments API
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:shortName=sd
-
-// SelectiveDeployment is the Schema for the selectivedeployments API
+// +kubebuilder:resource:scope=Namespaced
 type SelectiveDeployment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
