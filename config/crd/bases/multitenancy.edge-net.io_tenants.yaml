@@ -22,7 +22,7 @@ spec:
       name: URL
       type: string
     - jsonPath: .spec.admin
-      name: ADMIN
+      name: Admin
       type: string
     - jsonPath: .spec.enabled
       name: Enabled

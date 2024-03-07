@@ -11,8 +11,6 @@ spec:
     kind: SelectiveDeployment
     listKind: SelectiveDeploymentList
     plural: selectivedeployments
-    shortNames:
-    - sd
     singular: selectivedeployment
   scope: Namespaced
   versions:
@@ -41,11 +39,6 @@ spec:
             type: object
           spec:
             description: SelectiveDeploymentSpec defines the desired state of SelectiveDeployment
-            properties:
-              foo:
-                description: Foo is an example field of SelectiveDeployment. Edit
-                  selectivedeployment_types.go to remove/update
-                type: string
             type: object
           status:
             description: SelectiveDeploymentStatus defines the observed state of SelectiveDeployment
