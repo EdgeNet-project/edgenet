@@ -11,6 +11,8 @@ spec:
     kind: SelectiveDeployment
     listKind: SelectiveDeploymentList
     plural: selectivedeployments
+    shortNames:
+    - sd
     singular: selectivedeployment
   scope: Namespaced
   versions:
