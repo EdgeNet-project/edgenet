@@ -84,7 +84,7 @@ type TenantStatus struct {
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:printcolumn:name="Full Name",type="string",JSONPath=".spec.fullName"
 // +kubebuilder:printcolumn:name="URL",type="string",JSONPath=".spec.url"
-// +kubebuilder:printcolumn:name="Email",type="string",JSONPath=".spec.email"
+// +kubebuilder:printcolumn:name="ADMIN",type="string",JSONPath=".spec.admin"
 // +kubebuilder:printcolumn:name="Enabled",type="boolean",JSONPath=".spec.enabled"
 type Tenant struct {
 	metav1.TypeMeta   `json:",inline"`

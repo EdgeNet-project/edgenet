@@ -21,8 +21,8 @@ spec:
     - jsonPath: .spec.url
       name: URL
       type: string
-    - jsonPath: .spec.email
-      name: Email
+    - jsonPath: .spec.admin
+      name: ADMIN
       type: string
     - jsonPath: .spec.enabled
       name: Enabled
