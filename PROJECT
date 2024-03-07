@@ -5,6 +5,7 @@
 domain: edge-net.io
 layout:
 - go.kubebuilder.io/v4
+multigroup: true
 projectName: edgenet
 repo: github.com/edgenet-project/edgenet-software
 version: "3"
