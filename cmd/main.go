@@ -34,10 +34,12 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
+	antreav1alpha1 "antrea.io/antrea/pkg/apis/crd/v1alpha1"
 	deploymentsv1 "github.com/edgenet-project/edgenet-software/api/deployments/v1"
 	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
 	deploymentscontroller "github.com/edgenet-project/edgenet-software/internal/controller/deployments"
 	multitenancycontroller "github.com/edgenet-project/edgenet-software/internal/controller/multitenancy"
+	"github.com/edgenet-project/edgenet-software/internal/utils"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -49,6 +51,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
+	utilruntime.Must(antreav1alpha1.AddToScheme(scheme))
 	utilruntime.Must(multitenancyv1.AddToScheme(scheme))
 	utilruntime.Must(deploymentsv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
@@ -60,8 +63,11 @@ func main() {
 	var probeAddr string
 	var secureMetrics bool
 	var enableHTTP2 bool
+	var disabledReconcilers utils.FlagList
+
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.Var(&disabledReconcilers, "disabled-reconcilers", "Comma seperated values of the reconciliers, Tenant,TenantResourceQuota,SubNamespace...")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -125,26 +131,36 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&multitenancycontroller.TenantReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Tenant")
-		os.Exit(1)
+	// Setup reconcilers, we might want to add the list of reconcilers. This part is auto generated.
+	// If you want to add the functionality to disable reconcilers, put it inside an if.
+	// WARNING: This part is semi-auto-generated! By default you cannot disable reconcilers since they are
+	// generated autside an if clause.
+	if !disabledReconcilers.Contains("Tenant") {
+		if err = (&multitenancycontroller.TenantReconciler{
+			Client: mgr.GetClient(),
+			Scheme: mgr.GetScheme(),
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "Tenant")
+			os.Exit(1)
+		}
 	}
-	if err = (&multitenancycontroller.TenantResourceQuotaReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "TenantResourceQuota")
-		os.Exit(1)
+	if !disabledReconcilers.Contains("TenantResourceQuota") {
+		if err = (&multitenancycontroller.TenantResourceQuotaReconciler{
+			Client: mgr.GetClient(),
+			Scheme: mgr.GetScheme(),
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "TenantResourceQuota")
+			os.Exit(1)
+		}
 	}
-	if err = (&deploymentscontroller.SelectiveDeploymentReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "SelectiveDeployment")
-		os.Exit(1)
+	if !disabledReconcilers.Contains("SelectiveDeployment") {
+		if err = (&deploymentscontroller.SelectiveDeploymentReconciler{
+			Client: mgr.GetClient(),
+			Scheme: mgr.GetScheme(),
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "SelectiveDeployment")
+			os.Exit(1)
+		}
 	}
 	//+kubebuilder:scaffold:builder
 
