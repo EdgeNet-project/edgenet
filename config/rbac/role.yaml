@@ -1,15 +1,84 @@
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  labels:
-    app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: manager-role
-    app.kubernetes.io/component: rbac
-    app.kubernetes.io/created-by: edgenet
-    app.kubernetes.io/part-of: edgenet
-    app.kubernetes.io/managed-by: kustomize
   name: manager-role
 rules:
-- apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - deployments.edge-net.io
+  resources:
+  - selectivedeployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - deployments.edge-net.io
+  resources:
+  - selectivedeployments/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - deployments.edge-net.io
+  resources:
+  - selectivedeployments/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - multitenancy.edge-net.io
+  resources:
+  - tenantresourcequotas
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - multitenancy.edge-net.io
+  resources:
+  - tenantresourcequotas/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - multitenancy.edge-net.io
+  resources:
+  - tenantresourcequotas/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - multitenancy.edge-net.io
+  resources:
+  - tenants
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - multitenancy.edge-net.io
+  resources:
+  - tenants/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - multitenancy.edge-net.io
+  resources:
+  - tenants/status
+  verbs:
+  - get
+  - patch
+  - update

@@ -17,31 +17,75 @@ limitations under the License.
 package v1
 
 import (
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+const TenantAdminRoleName = "edgenet:tenant-admin"
 
 // TenantSpec defines the desired state of Tenant
 type TenantSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Full name of the tenant.
+	// +kubebuilder:validation:MaxLength=80
+	// +kubebuilder:validation:Required
+	FullName string `json:"fullName"`
 
-	// Foo is an example field of Tenant. Edit tenant_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Description provides additional information about the tenant.
+	// +kubebuilder:validation:MaxLength=200
+	// +kubebuilder:validation:Optional
+	Description string `json:"description"`
+
+	// This is the admin username for the tenant. A role binding will be created for user with this username.
+	// The username for some cases can also be emails. This was the old method. But with different identity
+	// providers this can be any name.
+	// +kubebuilder:validation:MaxLength=200
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`
+	// old+kubebuilder:validation:Pattern=`^([a-zA-Z0-9._%+-]+@)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$`
+	Admin string `json:"admin"`
+
+	// Website of the tenant.
+	// +kubebuilder:validation:Pattern=`^(https?://)?([\da-z\.-]+)\.([a-z\.]{2,6})([/\w \.-]*)*/?$`
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MaxLength=2000
+	URL string `json:"url"`
+
+	// This represents the initial resource allocation for the tenant. If not specified, the tenant resource
+	// quota will not be created.
+	// +kubebuilder:validation:Optional
+	InitialRequest map[corev1.ResourceName]resource.Quantity `json:"initialRequest"`
+
+	// Whether cluster-level network policies will be applied to tenant namespaces for security purposes.
+	// +kubebuilder:default=false
+	// +kubebuilder:validation:Optional
+	ClusterNetworkPolicy bool `json:"clusterNetworkPolicy"`
+
+	// If the tenant is active then this field is true.
+	// +kubebuilder:validation:Required
+	Enabled bool `json:"enabled"`
 }
 
 // TenantStatus defines the observed state of Tenant
 type TenantStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// The state can be Established or Failed.
+	State string `json:"state"`
+
+	// Additional description can be located here.
+	Message string `json:"message"`
+
+	// Failed sets the backoff limit.
+	Failed int `json:"failed"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-
 // Tenant is the Schema for the tenants API
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:printcolumn:name="Full Name",type="string",JSONPath=".spec.fullName"
+// +kubebuilder:printcolumn:name="URL",type="string",JSONPath=".spec.url"
+// +kubebuilder:printcolumn:name="Email",type="string",JSONPath=".spec.email"
+// +kubebuilder:printcolumn:name="Enabled",type="boolean",JSONPath=".spec.enabled"
 type Tenant struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -50,7 +94,7 @@ type Tenant struct {
 	Status TenantStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 
 // TenantList contains a list of Tenant
 type TenantList struct {
