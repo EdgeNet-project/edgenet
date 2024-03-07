@@ -74,7 +74,7 @@ spec:
         # given as a comma seperated case sensitive list of reconciler names in singlular form.
         # --disabled-reconcilers="Tenant,SubNamespace"
         - --disabled-reconcilers=""
-        image: edgenetio/edgenet-controller:latest
+        image: controller
         name: manager
         securityContext:
           allowPrivilegeEscalation: false
