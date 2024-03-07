@@ -8,4 +8,14 @@ layout:
 multigroup: true
 projectName: edgenet
 repo: github.com/edgenet-project/edgenet-software
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: edge-net.io
+  group: multitenancy
+  kind: Tenant
+  path: github.com/edgenet-project/edgenet-software/api/multitenancy/v1
+  version: v1
 version: "3"

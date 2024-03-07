@@ -1,0 +1,12 @@
+apiVersion: multitenancy.edge-net.io/v1
+kind: Tenant
+metadata:
+  labels:
+    app.kubernetes.io/name: tenant
+    app.kubernetes.io/instance: tenant-sample
+    app.kubernetes.io/part-of: edgenet
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: edgenet
+  name: tenant-sample
+spec:
+  # TODO(user): Add fields here
