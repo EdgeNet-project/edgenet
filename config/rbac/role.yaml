@@ -29,6 +29,32 @@ rules:
   - update
   - watch
 - apiGroups:
+  - deployments.edge-net.io
+  resources:
+  - selectivedeployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - deployments.edge-net.io
+  resources:
+  - selectivedeployments/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - deployments.edge-net.io
+  resources:
+  - selectivedeployments/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - multitenancy.edge-net.io
   resources:
   - tenantresourcequotas

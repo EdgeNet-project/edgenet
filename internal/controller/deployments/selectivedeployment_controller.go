@@ -1,5 +1,5 @@
 /*
-Copyright 2024 EdgeNet.
+Copyright 2024 Contributors to EdgeNet Project.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package deployments
 
 import (
 	"context"
@@ -24,29 +24,29 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	multitenancyedgenetiov1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
+	deploymentsv1 "github.com/edgenet-project/edgenet-software/api/deployments/v1"
 )
 
-// TenantResourceQuotaReconciler reconciles a TenantResourceQuota object
-type TenantResourceQuotaReconciler struct {
+// SelectiveDeploymentReconciler reconciles a SelectiveDeployment object
+type SelectiveDeploymentReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenantresourcequotas,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenantresourcequotas/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenantresourcequotas/finalizers,verbs=update
+//+kubebuilder:rbac:groups=deployments.edge-net.io,resources=selectivedeployments,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=deployments.edge-net.io,resources=selectivedeployments/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=deployments.edge-net.io,resources=selectivedeployments/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
-// the TenantResourceQuota object against the actual cluster state, and then
+// the SelectiveDeployment object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.17.0/pkg/reconcile
-func (r *TenantResourceQuotaReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *SelectiveDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
 	// TODO(user): your logic here
@@ -55,8 +55,8 @@ func (r *TenantResourceQuotaReconciler) Reconcile(ctx context.Context, req ctrl.
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *TenantResourceQuotaReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *SelectiveDeploymentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&multitenancyedgenetiov1.TenantResourceQuota{}).
+		For(&deploymentsv1.SelectiveDeployment{}).
 		Complete(r)
 }

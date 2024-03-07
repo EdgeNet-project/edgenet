@@ -1,5 +1,5 @@
 /*
-Copyright 2024 EdgeNet.
+Copyright 2024 Contributors to EdgeNet Project.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ type TenantStatus struct {
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:printcolumn:name="Full Name",type="string",JSONPath=".spec.fullName"
 // +kubebuilder:printcolumn:name="URL",type="string",JSONPath=".spec.url"
-// +kubebuilder:printcolumn:name="Email",type="string",JSONPath=".spec.email"
+// +kubebuilder:printcolumn:name="ADMIN",type="string",JSONPath=".spec.admin"
 // +kubebuilder:printcolumn:name="Enabled",type="boolean",JSONPath=".spec.enabled"
 type Tenant struct {
 	metav1.TypeMeta   `json:",inline"`

@@ -1,11 +1,27 @@
+/*
+Copyright 2024 Contributors to EdgeNet Project.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package multitenancy
 
 import (
 	"context"
 
 	antreav1alpha1 "antrea.io/antrea/pkg/apis/crd/v1alpha1"
-	v1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
-	"github.com/ubombar/edgenet-kubebuilder/internal/utils"
+	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
+	"github.com/edgenet-project/edgenet-software/internal/utils"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -22,21 +38,21 @@ import (
 type MultiTenancyManager interface {
 	// Remove the tenant and all of the other artifacts created with it including,
 	// subtenants, subnamespaces etc.
-	TenantCleanup(context.Context, *v1.Tenant) error
+	TenantCleanup(context.Context, *multitenancyv1.Tenant) error
 
 	// Creates a core namespace (same name with the tenant) and sets the resource allocation.
 	// Returns nil, if the namespace already exists.
-	CreateCoreNamespace(context.Context, *v1.Tenant, types.UID) error
+	CreateCoreNamespace(context.Context, *multitenancyv1.Tenant, types.UID) error
 
 	// Same as the CreateCoreNamespace except gets the UID from local cluster.
-	CreateCoreNamespaceLocal(ctx context.Context, t *v1.Tenant) error
+	CreateCoreNamespaceLocal(ctx context.Context, t *multitenancyv1.Tenant) error
 
 	// Creates a new tenant role binding with admin priviliages. Requires "edgenet:tenant-admin" role
 	// to work.
-	CreateTenantAdminRoleBinding(ctx context.Context, t *v1.Tenant) error
+	CreateTenantAdminRoleBinding(ctx context.Context, t *multitenancyv1.Tenant) error
 
 	// Create the network policy. If specified creates the cluster network policy as well.
-	CreateTenantNetworkPolicy(ctx context.Context, t *v1.Tenant) error
+	CreateTenantNetworkPolicy(ctx context.Context, t *multitenancyv1.Tenant) error
 }
 
 type multiTenancyManager struct {
@@ -50,7 +66,7 @@ func NewMultiTenancyManager(ctx context.Context, client client.Client) (MultiTen
 	}, nil
 }
 
-func (m *multiTenancyManager) TenantCleanup(ctx context.Context, t *v1.Tenant) error {
+func (m *multiTenancyManager) TenantCleanup(ctx context.Context, t *multitenancyv1.Tenant) error {
 	// The core namespace should automatically deleted because of the owner references.
 	// // Get the corenamespace name
 	// coreNamespaceName := ResolveCoreNamespaceName(t.Name)
@@ -70,7 +86,7 @@ func (m *multiTenancyManager) TenantCleanup(ctx context.Context, t *v1.Tenant) e
 
 // Same as the CreateCoreNamespace except automaticaly populates the cluster UID from the local
 // Cluster's kube-system namesapce
-func (m *multiTenancyManager) CreateCoreNamespaceLocal(ctx context.Context, t *v1.Tenant) error {
+func (m *multiTenancyManager) CreateCoreNamespaceLocal(ctx context.Context, t *multitenancyv1.Tenant) error {
 	clusterUID, err := utils.GetClusterUID(ctx, m.client)
 
 	if err != nil {
@@ -82,7 +98,7 @@ func (m *multiTenancyManager) CreateCoreNamespaceLocal(ctx context.Context, t *v
 
 // Creates a core namespace, sets the ownership references and does resource allocation.
 // The clusterUID is given as a future federation concept.
-func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *v1.Tenant, clusterUID types.UID) error {
+func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *multitenancyv1.Tenant, clusterUID types.UID) error {
 	// Get the corenamespace name
 	coreNamespaceName := utils.ResolveCoreNamespaceName(t.Name)
 	coreNamespaceObjectKey := client.ObjectKey{Name: coreNamespaceName}
@@ -135,13 +151,13 @@ func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *v1.Ten
 
 // This creates a role binding for the tenant. The role binding will be created inside the core namespace of the
 // tenant. By this way the tenant's permissions will be contained inside the core namespace.
-func (m *multiTenancyManager) CreateTenantAdminRoleBinding(ctx context.Context, t *v1.Tenant) error {
+func (m *multiTenancyManager) CreateTenantAdminRoleBinding(ctx context.Context, t *multitenancyv1.Tenant) error {
 	// Retrieve the role bingind, if already exists, do nothing.
 	roleBinding := &rbacv1.RoleBinding{}
 	err := m.client.Get(ctx,
 		types.NamespacedName{
 			// The name of the rolebinding should be TenantAdminRoleName and Namespace should be core namespace
-			Name:      v1.TenantAdminRoleName,
+			Name:      multitenancyv1.TenantAdminRoleName,
 			Namespace: utils.ResolveCoreNamespaceName(t.GetName()),
 		}, roleBinding)
 
@@ -151,7 +167,7 @@ func (m *multiTenancyManager) CreateTenantAdminRoleBinding(ctx context.Context, 
 		if errors.IsNotFound(err) {
 			roleBinding = &rbacv1.RoleBinding{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      v1.TenantAdminRoleName,
+					Name:      multitenancyv1.TenantAdminRoleName,
 					Namespace: utils.ResolveCoreNamespaceName(t.GetName()),
 					Labels: map[string]string{
 						"edge-net.io/generated":    "true",
@@ -167,7 +183,7 @@ func (m *multiTenancyManager) CreateTenantAdminRoleBinding(ctx context.Context, 
 				},
 				RoleRef: rbacv1.RoleRef{
 					Kind: "ClusterRole",
-					Name: v1.TenantAdminRoleName,
+					Name: multitenancyv1.TenantAdminRoleName,
 				},
 			}
 
@@ -179,7 +195,7 @@ func (m *multiTenancyManager) CreateTenantAdminRoleBinding(ctx context.Context, 
 }
 
 // Create the network policy, if specified in the tenant create the cluster network policy as well.
-func (m *multiTenancyManager) CreateTenantNetworkPolicy(ctx context.Context, t *v1.Tenant) error {
+func (m *multiTenancyManager) CreateTenantNetworkPolicy(ctx context.Context, t *multitenancyv1.Tenant) error {
 	clusterUID, err := utils.GetClusterUID(ctx, m.client)
 	if err != nil {
 		return err

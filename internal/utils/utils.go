@@ -1,3 +1,19 @@
+/*
+Copyright 2024 Contributors to EdgeNet Project.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package utils
 
 import (
@@ -7,6 +23,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -109,7 +126,6 @@ func GetResourceWithFinalizer(ctx context.Context, c client.Client, obj client.O
 func AllowObjectDeletion(ctx context.Context, c client.Client, obj client.Object) (reconcile.Result, error) {
 	obj.SetFinalizers(removeFinalizer(obj.GetFinalizers(), "edge-net.io/controller"))
 
-	fmt.Println("finalizing")
 	if err := c.Update(ctx, obj); err != nil {
 		return reconcile.Result{}, err
 	}
@@ -132,4 +148,19 @@ func GetClusterUID(ctx context.Context, client client.Client) (types.UID, error)
 	}
 
 	return namespace.GetUID(), nil
+}
+
+// Gets the event recorder from the manager. This event recorder is used for sending events for objects.
+func GetEventRecorder(mgr ctrl.Manager) record.EventRecorder {
+	return mgr.GetEventRecorderFor("edgenet-controller")
+}
+
+// Sends an error to the object using the event recorder. The type is error.
+func RecordEventError(r record.EventRecorder, obj client.Object, message string) {
+	r.Eventf(obj, "Warning", "Error", message)
+}
+
+// Sends an update event to the object using the event recorder.
+func RecordEventInfo(r record.EventRecorder, obj client.Object, message string) {
+	r.Eventf(obj, "Normal", "Update", message)
 }

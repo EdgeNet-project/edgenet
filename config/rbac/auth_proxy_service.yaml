@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/part-of: edgenet
     app.kubernetes.io/managed-by: kustomize
   name: controller-manager-metrics-service
-  namespace: kube-system
+  namespace: edgenet-system
 spec:
   ports:
   - name: https

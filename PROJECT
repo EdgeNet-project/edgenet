@@ -5,26 +5,35 @@
 domain: edge-net.io
 layout:
 - go.kubebuilder.io/v4
-projectName: edgenet
 multigroup: true
-repo: github.com/ubombar/edgenet-kubebuilder
+projectName: edgenet
+repo: github.com/edgenet-project/edgenet-software
 resources:
 - api:
     crdVersion: v1
     namespaced: true
   controller: true
   domain: edge-net.io
-  group: multitenancy.edge-net.io
+  group: multitenancy
   kind: Tenant
-  path: github.com/ubombar/edgenet-kubebuilder/api/v1
+  path: github.com/edgenet-project/edgenet-software/api/multitenancy/v1
   version: v1
 - api:
     crdVersion: v1
     namespaced: true
   controller: true
   domain: edge-net.io
-  group: multitenancy.edge-net.io
+  group: multitenancy
   kind: TenantResourceQuota
-  path: github.com/ubombar/edgenet-kubebuilder/api/v1
+  path: github.com/edgenet-project/edgenet-software/api/multitenancy/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: edge-net.io
+  group: deployments
+  kind: SelectiveDeployment
+  path: github.com/edgenet-project/edgenet-software/api/deployments/v1
   version: v1
 version: "3"

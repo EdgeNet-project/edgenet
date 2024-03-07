@@ -1,5 +1,5 @@
 /*
-Copyright 2024 EdgeNet.
+Copyright 2024 Contributors to EdgeNet Project.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ package v1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
+// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 // TenantResourceQuotaSpec defines the desired state of TenantResourceQuota
 type TenantResourceQuotaSpec struct {

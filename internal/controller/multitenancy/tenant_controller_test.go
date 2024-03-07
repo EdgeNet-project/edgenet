@@ -1,5 +1,5 @@
 /*
-Copyright 2024 EdgeNet.
+Copyright 2024 Contributors to EdgeNet Project.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package multitenancy
 
 import (
 	"context"
@@ -27,10 +27,10 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	multitenancyedgenetiov1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
+	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
 )
 
-var _ = Describe("TenantResourceQuota Controller", func() {
+var _ = Describe("Tenant Controller", func() {
 	Context("When reconciling a resource", func() {
 		const resourceName = "test-resource"
 
@@ -40,13 +40,13 @@ var _ = Describe("TenantResourceQuota Controller", func() {
 			Name:      resourceName,
 			Namespace: "default", // TODO(user):Modify as needed
 		}
-		tenantresourcequota := &multitenancyedgenetiov1.TenantResourceQuota{}
+		tenant := &multitenancyv1.Tenant{}
 
 		BeforeEach(func() {
-			By("creating the custom resource for the Kind TenantResourceQuota")
-			err := k8sClient.Get(ctx, typeNamespacedName, tenantresourcequota)
+			By("creating the custom resource for the Kind Tenant")
+			err := k8sClient.Get(ctx, typeNamespacedName, tenant)
 			if err != nil && errors.IsNotFound(err) {
-				resource := &multitenancyedgenetiov1.TenantResourceQuota{
+				resource := &multitenancyv1.Tenant{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      resourceName,
 						Namespace: "default",
@@ -59,16 +59,16 @@ var _ = Describe("TenantResourceQuota Controller", func() {
 
 		AfterEach(func() {
 			// TODO(user): Cleanup logic after each test, like removing the resource instance.
-			resource := &multitenancyedgenetiov1.TenantResourceQuota{}
+			resource := &multitenancyv1.Tenant{}
 			err := k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Cleanup the specific resource instance TenantResourceQuota")
+			By("Cleanup the specific resource instance Tenant")
 			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
 		})
 		It("should successfully reconcile the resource", func() {
 			By("Reconciling the created resource")
-			controllerReconciler := &TenantResourceQuotaReconciler{
+			controllerReconciler := &TenantReconciler{
 				Client: k8sClient,
 				Scheme: k8sClient.Scheme(),
 			}

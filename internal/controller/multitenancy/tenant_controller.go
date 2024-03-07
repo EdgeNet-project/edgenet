@@ -1,5 +1,5 @@
 /*
-Copyright 2024 EdgeNet.
+Copyright 2024 Contributors to EdgeNet Project.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,24 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package multitenancy
 
 import (
 	"context"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	v1 "github.com/ubombar/edgenet-kubebuilder/api/v1"
-	"github.com/ubombar/edgenet-kubebuilder/internal/utils"
-	multitenancy "github.com/ubombar/edgenet-kubebuilder/internal/v1"
+	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
+	"github.com/edgenet-project/edgenet-software/internal/multitenancy/v1"
+	"github.com/edgenet-project/edgenet-software/internal/utils"
 )
 
 // TenantReconciler reconciles a Tenant object
 type TenantReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme   *runtime.Scheme
+	recorder record.EventRecorder
 }
 
 // These are required to have the permissions.
@@ -53,7 +55,7 @@ type TenantReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
 func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	tenant := v1.Tenant{}
+	tenant := multitenancyv1.Tenant{}
 	isMarkedForDeletion, reconcileResult, err := utils.GetResourceWithFinalizer(ctx, r.Client, &tenant, req.NamespacedName)
 
 	if !utils.IsObjectInitialized(&tenant) {
@@ -69,6 +71,7 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	if isMarkedForDeletion {
 		// Do a cleanup and allow tenant object for deletion
 		if err := multiTenancyManager.TenantCleanup(ctx, &tenant); err != nil {
+			utils.RecordEventError(r.recorder, &tenant, "Tenant cleanup failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 
@@ -76,28 +79,34 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	} else {
 		// Create a core namespace for the tenant.
 		if err := multiTenancyManager.CreateCoreNamespaceLocal(ctx, &tenant); err != nil {
+			utils.RecordEventError(r.recorder, &tenant, "Tenant Core Namespace creation failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 
 		// Create the role binding in the core namespace of the tenant.
 		if err := multiTenancyManager.CreateTenantAdminRoleBinding(ctx, &tenant); err != nil {
+			utils.RecordEventError(r.recorder, &tenant, "Tenant admin role binding failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 
 		// Create the network policy. This restricts pod communication. Don't need to clean after
 		// deletion of the tenant.
 		if err := multiTenancyManager.CreateTenantNetworkPolicy(ctx, &tenant); err != nil {
+			utils.RecordEventError(r.recorder, &tenant, "Tenant antrea network policy failed")
 			return ctrl.Result{Requeue: true}, err
 		}
-
 	}
 
+	utils.RecordEventInfo(r.recorder, &tenant, "Tenant reconciliation successfull")
 	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *TenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// Setup the event recorder
+	r.recorder = utils.GetEventRecorder(mgr)
+
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&v1.Tenant{}).
+		For(&multitenancyv1.Tenant{}).
 		Complete(r)
 }

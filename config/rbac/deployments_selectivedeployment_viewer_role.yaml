@@ -1,0 +1,27 @@
+# permissions for end users to view selectivedeployments.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: selectivedeployment-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: edgenet
+    app.kubernetes.io/part-of: edgenet
+    app.kubernetes.io/managed-by: kustomize
+  name: selectivedeployment-viewer-role
+rules:
+- apiGroups:
+  - deployments.edge-net.io
+  resources:
+  - selectivedeployments
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - deployments.edge-net.io
+  resources:
+  - selectivedeployments/status
+  verbs:
+  - get

@@ -9,4 +9,4 @@ metadata:
     app.kubernetes.io/created-by: edgenet
   name: tenantresourcequota-sample
 spec:
-# TODO(user): Add fields here
+  # TODO(user): Add fields here

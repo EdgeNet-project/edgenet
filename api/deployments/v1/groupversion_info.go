@@ -1,5 +1,5 @@
 /*
-Copyright 2024 EdgeNet.
+Copyright 2024 Contributors to EdgeNet Project.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1 contains API Schema definitions for the multitenancy.edge-net.io v1 API group
+// Package v1 contains API Schema definitions for the deployments v1 API group
 // +kubebuilder:object:generate=true
-// +groupName=multitenancy.edge-net.io
+// +groupName=deployments.edge-net.io
 package v1
 
 import (
@@ -26,7 +26,7 @@ import (
 
 var (
 	// GroupVersion is group version used to register these objects
-	GroupVersion = schema.GroupVersion{Group: "multitenancy.edge-net.io", Version: "v1"}
+	GroupVersion = schema.GroupVersion{Group: "deployments.edge-net.io", Version: "v1"}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}
