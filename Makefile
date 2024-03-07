@@ -1,6 +1,6 @@
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG ?= edgenetio/edgenet-controller:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.29.0
 # This should be same as the antrea version in go.mod file since it is using that version in the library.
@@ -138,13 +138,13 @@ endif
 install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
 	$(KUBECTL) apply -f https://github.com/antrea-io/antrea/releases/download/${ANTREA_VERSION}/antrea.yml
 	$(KUSTOMIZE) build config/crd | $(KUBECTL) apply -f -
-	# $(KUSTOMIZE) build config/rbac | $(KUBECTL) apply -f -
+	$(KUSTOMIZE) build config/rbac | $(KUBECTL) apply -f -
 
 .PHONY: uninstall
 uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUBECTL) delete --ignore-not-found=$(ignore-not-found)  -f https://github.com/antrea-io/antrea/releases/download/${ANTREA_VERSION}/antrea.yml
 	$(KUSTOMIZE) build config/crd | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
-	# $(KUSTOMIZE) build config/rbac | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
+	$(KUSTOMIZE) build config/rbac | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
 .PHONY: deploy
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.

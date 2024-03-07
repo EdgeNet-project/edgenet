@@ -70,7 +70,11 @@ spec:
         - /manager
         args:
         - --leader-elect
-        image: controller:latest
+        # This argument is used for disabling certain reconcilers. The reconciler names should be 
+        # given as a comma seperated case sensitive list of reconciler names in singlular form.
+        # --disabled-reconcilers="Tenant,SubNamespace"
+        - --disabled-reconcilers=""
+        image: edgenetio/edgenet-controller:latest
         name: manager
         securityContext:
           allowPrivilegeEscalation: false
