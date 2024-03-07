@@ -2,7 +2,8 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
-- edgenet_system_namespace.yaml
+# This creates problems! Find a better solution
+# - edgenet_system_namespace.yaml
 - bases/multitenancy.edge-net.io_tenants.yaml
 - bases/multitenancy.edge-net.io_tenantresourcequotas.yaml
 - bases/deployments.edge-net.io_selectivedeployments.yaml
