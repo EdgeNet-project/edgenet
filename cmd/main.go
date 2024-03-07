@@ -64,7 +64,8 @@ func main() {
 	var secureMetrics bool
 	var enableHTTP2 bool
 	var disabledReconcilers utils.FlagList
-
+	var debug bool
+	flag.BoolVar(&debug, "debug", false, "Debug mode for the logger")
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.Var(&disabledReconcilers, "disabled-reconcilers", "Comma seperated values of the reconciliers, Tenant,TenantResourceQuota,SubNamespace...")
@@ -76,7 +77,7 @@ func main() {
 	flag.BoolVar(&enableHTTP2, "enable-http2", false,
 		"If set, HTTP/2 will be enabled for the metrics and webhook servers")
 	opts := zap.Options{
-		Development: true,
+		Development: debug,
 	}
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
