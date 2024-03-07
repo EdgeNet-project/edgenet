@@ -6,6 +6,7 @@ domain: edge-net.io
 layout:
 - go.kubebuilder.io/v4
 projectName: edgenet
+multigroup: true
 repo: github.com/ubombar/edgenet-kubebuilder
 resources:
 - api:
