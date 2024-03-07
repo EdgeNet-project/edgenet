@@ -142,7 +142,7 @@ install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~
 
 .PHONY: uninstall
 uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUBECTL) delete -f https://github.com/antrea-io/antrea/releases/download/${ANTREA_VERSION}/antrea.yml
+	$(KUBECTL) delete --ignore-not-found=$(ignore-not-found)  -f https://github.com/antrea-io/antrea/releases/download/${ANTREA_VERSION}/antrea.yml
 	$(KUSTOMIZE) build config/crd | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 	# $(KUSTOMIZE) build config/rbac | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
