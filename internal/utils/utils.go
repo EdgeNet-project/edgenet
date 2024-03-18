@@ -157,10 +157,18 @@ func GetEventRecorder(mgr ctrl.Manager) record.EventRecorder {
 
 // Sends an error to the object using the event recorder. The type is error.
 func RecordEventError(r record.EventRecorder, obj client.Object, message string) {
-	r.Eventf(obj, "Warning", "Error", message)
+	if r == nil {
+		fmt.Println("Event recorder is nil.")
+	} else {
+		r.Eventf(obj, "Warning", "Error", message)
+	}
 }
 
 // Sends an update event to the object using the event recorder.
 func RecordEventInfo(r record.EventRecorder, obj client.Object, message string) {
-	r.Eventf(obj, "Normal", "Update", message)
+	if r == nil {
+		fmt.Println("Event recorder is nil.")
+	} else {
+		r.Eventf(obj, "Normal", "Update", message)
+	}
 }

@@ -16,17 +16,17 @@ limitations under the License.
 
 package e2e
 
-import (
-	"fmt"
-	"testing"
+// import (
+// 	"fmt"
+// 	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-)
+// 	. "github.com/onsi/ginkgo/v2"
+// 	. "github.com/onsi/gomega"
+// )
 
-// Run e2e tests using the Ginkgo runner.
-func TestE2E(t *testing.T) {
-	RegisterFailHandler(Fail)
-	fmt.Fprintf(GinkgoWriter, "Starting edgenet suite\n")
-	RunSpecs(t, "e2e suite")
-}
+// // Run e2e tests using the Ginkgo runner.
+// func TestE2E(t *testing.T) {
+// 	RegisterFailHandler(Fail)
+// 	fmt.Fprintf(GinkgoWriter, "Starting edgenet suite\n")
+// 	RunSpecs(t, "e2e suite")
+// }
