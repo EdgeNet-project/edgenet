@@ -50,7 +50,7 @@ func NewMaxMindFromSecret(url, accountId, key string) (MaxMind, error) {
 	keyPath := "/var/run/secrets/edge-net.io/maxmind-secret/maxmind_token"
 
 	// Last resort, return error if there is one.
-	accountIdBytes, err := os.ReadFile(accountId)
+	accountIdBytes, err := os.ReadFile(accountIdPath)
 	if err != nil {
 		return nil, err
 	}
