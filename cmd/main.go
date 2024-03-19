@@ -68,9 +68,13 @@ func main() {
 	var disabledReconcilers utils.FlagList
 	var debug bool
 	var maxmindUrl string
+	var maxmindAccountId string
+	var maxmindToken string
 	flag.BoolVar(&debug, "debug", false, "Debug mode for the logger")
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.StringVar(&maxmindAccountId, "maxmind-accountid", "", "The account id of the maxmind geodatabase.")
+	flag.StringVar(&maxmindToken, "maxmind-token", "", "The access token of the maxmind geodatabase.")
 	flag.StringVar(&maxmindUrl, "maxmind-url", "https://geoip.maxmind.com/geoip/v2.1/city/", "The endpoint of the maxmind for the ip lookup to work.")
 	flag.Var(&disabledReconcilers, "disabled-reconcilers", "Comma seperated values of the reconciliers, Tenant,TenantResourceQuota,SubNamespace...")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
@@ -137,7 +141,7 @@ func main() {
 	}
 
 	// Try to read the maxmind accountid, and token from the file.
-	maxmind, err := labeller.NewMaxMindFromSecret()
+	maxmind, err := labeller.NewMaxMindFromSecret(maxmindUrl, maxmindAccountId, maxmindToken)
 
 	// If the error is not nil then we cannot get the maxmind config and we should not start node labeller reconcilier.
 	disableNodeLabeller := err != nil
