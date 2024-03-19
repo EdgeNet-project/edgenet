@@ -35,9 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	antreav1alpha1 "antrea.io/antrea/pkg/apis/crd/v1alpha1"
-	deploymentsv1 "github.com/edgenet-project/edgenet-software/api/deployments/v1"
 	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
-	deploymentscontroller "github.com/edgenet-project/edgenet-software/internal/controller/deployments"
 	multitenancycontroller "github.com/edgenet-project/edgenet-software/internal/controller/multitenancy"
 	"github.com/edgenet-project/edgenet-software/internal/utils"
 	//+kubebuilder:scaffold:imports
@@ -53,7 +51,6 @@ func init() {
 
 	utilruntime.Must(antreav1alpha1.AddToScheme(scheme))
 	utilruntime.Must(multitenancyv1.AddToScheme(scheme))
-	utilruntime.Must(deploymentsv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -151,15 +148,6 @@ func main() {
 			Scheme: mgr.GetScheme(),
 		}).SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "TenantResourceQuota")
-			os.Exit(1)
-		}
-	}
-	if !disabledReconcilers.Contains("SelectiveDeployment") {
-		if err = (&deploymentscontroller.SelectiveDeploymentReconciler{
-			Client: mgr.GetClient(),
-			Scheme: mgr.GetScheme(),
-		}).SetupWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", "SelectiveDeployment")
 			os.Exit(1)
 		}
 	}
