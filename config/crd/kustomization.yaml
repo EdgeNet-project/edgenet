@@ -4,6 +4,7 @@
 resources:
 # This creates problems! Find a better solution
 # - edgenet_system_namespace.yaml
+- secrets/maxmind_secret.yaml
 - bases/multitenancy.edge-net.io_tenants.yaml
 - bases/multitenancy.edge-net.io_tenantresourcequotas.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
