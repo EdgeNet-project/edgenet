@@ -38,13 +38,13 @@ type TenantReconciler struct {
 }
 
 // These are required to have the permissions.
-//+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenants,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="multitenancy.edge-net.io",resources=tenants,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=rolebindings,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="networking.k8s.io",resources=networkpolicies;clusternetworkpolicies,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="crd.antrea.io",resources=clusternetworkpolicies,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenants/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=tenants/finalizers,verbs=update
+//+kubebuilder:rbac:groups="multitenancy.edge-net.io",resources=tenants/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups="multitenancy.edge-net.io",resources=tenants/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
