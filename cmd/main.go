@@ -35,7 +35,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	antreav1alpha1 "antrea.io/antrea/pkg/apis/crd/v1alpha1"
+
 	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
+	labellerscontroller "github.com/edgenet-project/edgenet-software/internal/controller/labellers"
 	multitenancycontroller "github.com/edgenet-project/edgenet-software/internal/controller/multitenancy"
 	"github.com/edgenet-project/edgenet-software/internal/utils"
 	//+kubebuilder:scaffold:imports
@@ -148,6 +150,15 @@ func main() {
 			Scheme: mgr.GetScheme(),
 		}).SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "TenantResourceQuota")
+			os.Exit(1)
+		}
+	}
+	if !disabledReconcilers.Contains("NodeLabeller") {
+		if err = (&labellerscontroller.NodeLabellerReconciler{
+			Client: mgr.GetClient(),
+			Scheme: mgr.GetScheme(),
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "NodeLabeller")
 			os.Exit(1)
 		}
 	}
