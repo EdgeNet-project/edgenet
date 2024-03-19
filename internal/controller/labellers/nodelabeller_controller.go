@@ -19,6 +19,7 @@ package labellers
 import (
 	"context"
 
+	"github.com/edgenet-project/edgenet-software/internal/labeller"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -30,7 +31,8 @@ import (
 // NodeLabellerReconciler reconciles a NodeLabeller object
 type NodeLabellerReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme  *runtime.Scheme
+	MaxMind labeller.MaxMind
 }
 
 //+kubebuilder:rbac:groups=core,resources=node,verbs=get;list;watch;create;update;patch

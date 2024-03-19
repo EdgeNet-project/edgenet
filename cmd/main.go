@@ -17,12 +17,14 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"flag"
 	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
+	"google.golang.org/appengine/log"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,6 +41,7 @@ import (
 	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
 	labellerscontroller "github.com/edgenet-project/edgenet-software/internal/controller/labellers"
 	multitenancycontroller "github.com/edgenet-project/edgenet-software/internal/controller/multitenancy"
+	"github.com/edgenet-project/edgenet-software/internal/labeller"
 	"github.com/edgenet-project/edgenet-software/internal/utils"
 	//+kubebuilder:scaffold:imports
 )
@@ -64,9 +67,11 @@ func main() {
 	var enableHTTP2 bool
 	var disabledReconcilers utils.FlagList
 	var debug bool
+	var maxmindUrl string
 	flag.BoolVar(&debug, "debug", false, "Debug mode for the logger")
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.StringVar(&maxmindUrl, "maxmind-url", "https://geoip.maxmind.com/geoip/v2.1/city/", "The endpoint of the maxmind for the ip lookup to work.")
 	flag.Var(&disabledReconcilers, "disabled-reconcilers", "Comma seperated values of the reconciliers, Tenant,TenantResourceQuota,SubNamespace...")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
@@ -131,6 +136,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Try to read the maxmind accountid, and token from the file.
+	maxmind, err := labeller.NewMaxMindFromSecret()
+	// If the error is not nil then we cannot get the maxmind config and we should not start node labeller reconcilier.
+	disableNodeLabeller := err != nil
+
+	if err != nil {
+		log.Warningf(context.TODO(), "Cannot retrieve the MaxMind Account Token, running without the NodeLabeller")
+	}
+
 	// Setup reconcilers, we might want to add the list of reconcilers. This part is auto generated.
 	// If you want to add the functionality to disable reconcilers, put it inside an if.
 	// WARNING: This part is semi-auto-generated! By default you cannot disable reconcilers since they are
@@ -153,10 +167,14 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	if !disabledReconcilers.Contains("NodeLabeller") {
+	// For NodeLabeller to be activated, it should not be in the disabled reconciler list and the maxmind from secret
+	// should not return an error
+	if !disabledReconcilers.Contains("NodeLabeller") && !disableNodeLabeller {
 		if err = (&labellerscontroller.NodeLabellerReconciler{
 			Client: mgr.GetClient(),
 			Scheme: mgr.GetScheme(),
+			// Add the maxming configuration to the reconcilier.
+			MaxMind: maxmind,
 		}).SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "NodeLabeller")
 			os.Exit(1)
