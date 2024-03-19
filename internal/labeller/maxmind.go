@@ -24,7 +24,7 @@ func NewMaxMindFromSecret() (MaxMind, error) {
 	return nil, errors.New("not yet implemented")
 }
 
-// This is for
+// This is for performing a lookup
 func (mm maxMind) MaxMindLookup(address string) (*geoip2.Response, error) {
 	req, err := http.NewRequest("GET", mm.url+address, nil)
 	if err != nil {

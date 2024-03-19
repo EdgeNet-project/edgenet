@@ -138,6 +138,7 @@ func main() {
 
 	// Try to read the maxmind accountid, and token from the file.
 	maxmind, err := labeller.NewMaxMindFromSecret()
+
 	// If the error is not nil then we cannot get the maxmind config and we should not start node labeller reconcilier.
 	disableNodeLabeller := err != nil
 
@@ -148,7 +149,7 @@ func main() {
 	// Setup reconcilers, we might want to add the list of reconcilers. This part is auto generated.
 	// If you want to add the functionality to disable reconcilers, put it inside an if.
 	// WARNING: This part is semi-auto-generated! By default you cannot disable reconcilers since they are
-	// generated autside an if clause.
+	// generated autside an if clause. ADD YOUR IF CLAUSE MANUALLY!
 	if !disabledReconcilers.Contains("Tenant") {
 		if err = (&multitenancycontroller.TenantReconciler{
 			Client: mgr.GetClient(),

@@ -118,6 +118,15 @@ func GetResourceWithFinalizer(ctx context.Context, c client.Client, obj client.O
 	return !obj.GetDeletionTimestamp().IsZero(), reconcile.Result{Requeue: false}, nil
 }
 
+// Gets the object from using the client. Unlike the "GetResourceWithFinalizer" function, it doesn't add a finalizer to the object.
+func GetResource(ctx context.Context, c client.Client, obj client.Object, namespacedName types.NamespacedName) error {
+	// Get the object from the cluster
+	if err := c.Get(ctx, namespacedName, obj); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Normally when a Kubernetes object is deleted it is no longer accessible from the etcd. To retrieve the last state
 // of the object finalizers are used. GetResourceWithFinalizer function adds a finalizer to the resource if not present.
 // These finalizers are then can used to keep the object in the cluster after it is marked for deletion.

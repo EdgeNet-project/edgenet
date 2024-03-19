@@ -18,6 +18,7 @@ package labeller
 
 import (
 	"context"
+	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -44,5 +45,6 @@ func NewLabelManager(ctx context.Context, client client.Client) (LabelManager, e
 
 // This adds the labels to the node and updates it. If any error occures it returnes the error.
 func (m *labelManager) LabelNode(context.Context, *corev1.Node) error {
+	fmt.Println("Node labeller implementation required...")
 	return nil
 }

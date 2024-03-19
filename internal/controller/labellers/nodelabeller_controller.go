@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/edgenet-project/edgenet-software/internal/labeller"
+	"github.com/edgenet-project/edgenet-software/internal/utils"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -49,8 +50,22 @@ type NodeLabellerReconciler struct {
 func (r *NodeLabellerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
+	// Get the node directly
 	node := &corev1.Node{}
-	if err := r.Client.Get(ctx, req.NamespacedName, node); err != nil {
+
+	if err := utils.GetResource(ctx, r.Client, node, req.NamespacedName); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// Create the labeller manager
+	labellerManager, err := labeller.NewLabelManager(ctx, r.Client)
+
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// Label the node
+	if err := labellerManager.LabelNode(ctx, node); err != nil {
 		return ctrl.Result{}, err
 	}
 
