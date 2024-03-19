@@ -30,21 +30,89 @@ import (
 type LabelManager interface {
 	// This adds the labes to the node object given
 	LabelNode(context.Context, *corev1.Node) error
+
+	// Gets the internal and external ip address
+	GetNodeIPAddresses(obj *corev1.Node) (string, string)
 }
 
 type labelManager struct {
 	LabelManager
-	client client.Client
+	client  client.Client
+	Maxmind MaxMind
 }
 
-func NewLabelManager(ctx context.Context, client client.Client) (LabelManager, error) {
+func NewLabelManager(ctx context.Context, client client.Client, maxmind MaxMind) (LabelManager, error) {
 	return &labelManager{
-		client: client,
+		client:  client,
+		Maxmind: maxmind,
 	}, nil
 }
 
 // This adds the labels to the node and updates it. If any error occures it returnes the error.
-func (m *labelManager) LabelNode(context.Context, *corev1.Node) error {
+func (m *labelManager) LabelNode(ctx context.Context, node *corev1.Node) error {
 	fmt.Println("Node labeller implementation required...")
+
+	// TODO: Get this part of the code from old repo
+	// internalIp, externalIp := m.GetNodeIPAddresses(node)
+
+	// Old code...
+	// // 1. Use the VPNPeer endpoint address if available.
+	// peer, err := c.edgenetclientset.NetworkingV1alpha1().VPNPeers().Get(context.TODO(), nodeObj.Name, v1.GetOptions{})
+	// if err != nil {
+	// 	klog.V(4).Infof(
+	// 		"Failed to find a matching VPNPeer object for %s: %s. The node IP will be used instead.",
+	// 		nodeObj.Name,
+	// 		err,
+	// 	)
+	// } else {
+	// 	klog.V(4).Infof("VPNPeer endpoint IP: %s", *peer.Spec.EndpointAddress)
+	// 	result = multiproviderManager.GetGeolocationByIP(
+	// 		c.maxmindURL,
+	// 		c.maxmindAccountID,
+	// 		c.maxmindLicenseKey,
+	// 		nodeObj.Name,
+	// 		*peer.Spec.EndpointAddress,
+	// 	)
+	// }
+
+	// // 2. Otherwise use the node external IP if available.
+	// if externalIP != "" && !result {
+	// 	klog.V(4).Infof("External IP: %s", externalIP)
+	// 	result = multiproviderManager.GetGeolocationByIP(
+	// 		c.maxmindURL,
+	// 		c.maxmindAccountID,
+	// 		c.maxmindLicenseKey,
+	// 		nodeObj.Name,
+	// 		externalIP,
+	// 	)
+	// }
+
+	// // 3. Otherwise use the node internal IP if available.
+	// if internalIP != "" && !result {
+	// 	klog.V(4).Infof("Internal IP: %s", internalIP)
+	// 	multiproviderManager.GetGeolocationByIP(
+	// 		c.maxmindURL,
+	// 		c.maxmindAccountID,
+	// 		c.maxmindLicenseKey,
+	// 		nodeObj.Name,
+	// 		internalIP,
+	// 	)
+	// }
+
 	return nil
+}
+
+// GetNodeIPAddresses picks up the internal and external IP addresses of the Node
+func (m *labelManager) GetNodeIPAddresses(obj *corev1.Node) (string, string) {
+	internalIP := ""
+	externalIP := ""
+	for _, addressesRow := range obj.Status.Addresses {
+		if addressType := addressesRow.Type; addressType == "InternalIP" {
+			internalIP = addressesRow.Address
+		}
+		if addressType := addressesRow.Type; addressType == "ExternalIP" {
+			externalIP = addressesRow.Address
+		}
+	}
+	return internalIP, externalIP
 }

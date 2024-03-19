@@ -58,7 +58,7 @@ func (r *NodeLabellerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Create the labeller manager
-	labellerManager, err := labeller.NewLabelManager(ctx, r.Client)
+	labellerManager, err := labeller.NewLabelManager(ctx, r.Client, r.MaxMind)
 
 	if err != nil {
 		return ctrl.Result{}, err
