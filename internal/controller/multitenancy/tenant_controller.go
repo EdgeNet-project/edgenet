@@ -25,9 +25,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
-	"github.com/edgenet-project/edgenet-software/internal/multitenancy/v1"
-	"github.com/edgenet-project/edgenet-software/internal/utils"
+	multitenancyv1 "github.com/edgenet-project/edgenet/api/multitenancy/v1"
+	"github.com/edgenet-project/edgenet/internal/multitenancy/v1"
+	"github.com/edgenet-project/edgenet/internal/utils"
 )
 
 // TenantReconciler reconciles a Tenant object

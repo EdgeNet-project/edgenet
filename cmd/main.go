@@ -38,11 +38,11 @@ import (
 
 	antreav1alpha1 "antrea.io/antrea/pkg/apis/crd/v1alpha1"
 
-	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
-	labellerscontroller "github.com/edgenet-project/edgenet-software/internal/controller/labellers"
-	multitenancycontroller "github.com/edgenet-project/edgenet-software/internal/controller/multitenancy"
-	"github.com/edgenet-project/edgenet-software/internal/labeller"
-	"github.com/edgenet-project/edgenet-software/internal/utils"
+	multitenancyv1 "github.com/edgenet-project/edgenet/api/multitenancy/v1"
+	labellerscontroller "github.com/edgenet-project/edgenet/internal/controller/labellers"
+	multitenancycontroller "github.com/edgenet-project/edgenet/internal/controller/multitenancy"
+	"github.com/edgenet-project/edgenet/internal/labeller"
+	"github.com/edgenet-project/edgenet/internal/utils"
 	//+kubebuilder:scaffold:imports
 )
 

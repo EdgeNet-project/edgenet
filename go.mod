@@ -1,4 +1,4 @@
-module github.com/edgenet-project/edgenet-software
+module github.com/edgenet-project/edgenet
 
 go 1.21.0
 

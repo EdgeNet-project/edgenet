@@ -26,7 +26,7 @@ package e2e
 // 	. "github.com/onsi/ginkgo/v2"
 // 	. "github.com/onsi/gomega"
 
-// 	"github.com/edgenet-project/edgenet-software/test/utils"
+// 	"github.com/edgenet-project/edgenet/test/utils"
 // )
 
 // const namespace = "edgenet-system"

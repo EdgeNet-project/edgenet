@@ -20,8 +20,8 @@ import (
 	"context"
 
 	antreav1alpha1 "antrea.io/antrea/pkg/apis/crd/v1alpha1"
-	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
-	"github.com/edgenet-project/edgenet-software/internal/utils"
+	multitenancyv1 "github.com/edgenet-project/edgenet/api/multitenancy/v1"
+	"github.com/edgenet-project/edgenet/internal/utils"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"

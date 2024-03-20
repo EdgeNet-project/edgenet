@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
+	multitenancyv1 "github.com/edgenet-project/edgenet/api/multitenancy/v1"
 )
 
 // TenantResourceQuotaReconciler reconciles a TenantResourceQuota object

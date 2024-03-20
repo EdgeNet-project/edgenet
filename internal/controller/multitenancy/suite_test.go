@@ -32,7 +32,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
+	multitenancyv1 "github.com/edgenet-project/edgenet/api/multitenancy/v1"
 	//+kubebuilder:scaffold:imports
 )
 

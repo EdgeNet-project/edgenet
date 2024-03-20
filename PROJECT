@@ -7,7 +7,7 @@ layout:
 - go.kubebuilder.io/v4
 multigroup: true
 projectName: edgenet
-repo: github.com/edgenet-project/edgenet-software
+repo: github.com/edgenet-project/edgenet
 resources:
 - api:
     crdVersion: v1
@@ -16,7 +16,7 @@ resources:
   domain: edge-net.io
   group: multitenancy
   kind: Tenant
-  path: github.com/edgenet-project/edgenet-software/api/multitenancy/v1
+  path: github.com/edgenet-project/edgenet/api/multitenancy/v1
   version: v1
 - api:
     crdVersion: v1
@@ -25,7 +25,7 @@ resources:
   domain: edge-net.io
   group: multitenancy
   kind: TenantResourceQuota
-  path: github.com/edgenet-project/edgenet-software/api/multitenancy/v1
+  path: github.com/edgenet-project/edgenet/api/multitenancy/v1
   version: v1
 - controller: true
   domain: edge-net.io

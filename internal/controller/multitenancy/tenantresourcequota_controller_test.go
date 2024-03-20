@@ -27,7 +27,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	multitenancyv1 "github.com/edgenet-project/edgenet-software/api/multitenancy/v1"
+	multitenancyv1 "github.com/edgenet-project/edgenet/api/multitenancy/v1"
 )
 
 var _ = Describe("TenantResourceQuota Controller", func() {
