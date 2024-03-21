@@ -97,7 +97,7 @@ func (m *multiTenancyManager) CreateCoreNamespaceLocal(ctx context.Context, t *m
 }
 
 // Creates a core namespace, sets the ownership references and does resource allocation.
-// The clusterUID is given as a future federation concept.
+// The clusterUID is given as a future federation concept. Also creates a ResourceQuota object.
 func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *multitenancyv1.Tenant, clusterUID types.UID) error {
 	// Get the corenamespace name
 	coreNamespaceName := utils.ResolveCoreNamespaceName(t.Name)
@@ -107,6 +107,14 @@ func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *multit
 	coreNamespace := corev1.Namespace{}
 	err := m.client.Get(ctx, coreNamespaceObjectKey, &coreNamespace)
 
+	labels := map[string]string{
+		"edge-net.io/tenant":      t.GetName(),
+		"edge-net.io/kind":        "core",
+		"edge-net.io/tenant-uid":  string(t.GetUID()),
+		"edge-net.io/cluster-uid": string(clusterUID),
+		"edge-net.io/generated":   "true",
+	}
+
 	// If there is no core namespace, create one
 	if err != nil && errors.IsNotFound(err) {
 		// Create the namespace here
@@ -114,12 +122,7 @@ func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *multit
 			ObjectMeta: metav1.ObjectMeta{
 				Name: coreNamespaceName,
 				// Set the labels
-				Labels: map[string]string{
-					"edge-net.io/tenant":      t.GetName(),
-					"edge-net.io/kind":        "core",
-					"edge-net.io/tenant-uid":  string(t.GetUID()),
-					"edge-net.io/cluster-uid": string(clusterUID),
-				},
+				Labels: labels,
 				// Set the annotations, for now empty
 				Annotations: map[string]string{},
 				// Set the owner reference
@@ -144,7 +147,32 @@ func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *multit
 		return err
 	}
 
-	// Set the resource quota for the namespace
+	// Set the resource quota for the namespace. Note that the resource quota is not additive in the namespace.
+	// Kubernetes takes the smallest one to check if a pod within bounds. Therefore we might want to use a custom
+	// object like SmartResourceQuota.
+	rc := &corev1.ResourceQuota{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      coreNamespaceName,
+			Namespace: coreNamespaceName,
+			Labels:    labels,
+		},
+		Spec: corev1.ResourceQuotaSpec{
+			Hard: t.Spec.InitialRequest,
+		},
+	}
+
+	// Try to create the resource quota specified in the initial request. If it already exists, try to change it.
+	// if there is still and error return the error.
+	if err := m.client.Create(ctx, rc); err != nil {
+		if errors.IsAlreadyExists(err) {
+			if err := m.client.Update(ctx, rc); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+
+	}
 
 	return nil
 }
