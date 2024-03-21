@@ -28,6 +28,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	multitenancyv1 "github.com/edgenet-project/edgenet/api/multitenancy/v1"
 )
 
 // Define a custom type that implements the flag.Value interface
@@ -58,6 +60,10 @@ func (s *FlagList) Contains(flag string) bool {
 // Resolve the core-namespace from tenant name (simply take the object name)
 func ResolveCoreNamespaceName(tenantName string) string {
 	return tenantName
+}
+
+func ResolveSubNamespaceName(s *multitenancyv1.SubNamespace) string {
+	return fmt.Sprintf("%s-%s", s.GetName(), s.GetUID())
 }
 
 // Check a string exists in a list of strings

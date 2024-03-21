@@ -18,6 +18,7 @@ package multitenancy
 
 import (
 	"context"
+	"fmt"
 
 	antreav1alpha1 "antrea.io/antrea/pkg/apis/crd/v1alpha1"
 	multitenancyv1 "github.com/edgenet-project/edgenet/api/multitenancy/v1"
@@ -45,14 +46,20 @@ type MultiTenancyManager interface {
 	CreateCoreNamespace(context.Context, *multitenancyv1.Tenant, types.UID) error
 
 	// Same as the CreateCoreNamespace except gets the UID from local cluster.
-	CreateCoreNamespaceLocal(ctx context.Context, t *multitenancyv1.Tenant) error
+	CreateCoreNamespaceLocal(context.Context, *multitenancyv1.Tenant) error
 
 	// Creates a new tenant role binding with admin priviliages. Requires "edgenet:tenant-admin" role
 	// to work.
-	CreateTenantAdminRoleBinding(ctx context.Context, t *multitenancyv1.Tenant) error
+	CreateTenantAdminRoleBinding(context.Context, *multitenancyv1.Tenant) error
 
 	// Create the network policy. If specified creates the cluster network policy as well.
-	CreateTenantNetworkPolicy(ctx context.Context, t *multitenancyv1.Tenant) error
+	CreateTenantNetworkPolicy(context.Context, *multitenancyv1.Tenant) error
+
+	// Cleanups the SubNamespace
+	SubNamespaceCleanup(context.Context, *multitenancyv1.SubNamespace) error
+
+	// Creates and setups studd for the SubNamespace
+	SetupSubNamespace(context.Context, *multitenancyv1.SubNamespace) error
 }
 
 type multiTenancyManager struct {
@@ -369,6 +376,51 @@ func (m *multiTenancyManager) CreateTenantNetworkPolicy(ctx context.Context, t *
 			return err
 		}
 	}
+
+	return nil
+}
+
+// Deletes the created child namespace.
+func (m *multiTenancyManager) SubNamespaceCleanup(ctx context.Context, s *multitenancyv1.SubNamespace) error {
+	subNamespaceName := utils.ResolveSubNamespaceName(s)
+
+	ns := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: subNamespaceName,
+		},
+	}
+
+	// Try to delete the namespace, ignore if not found
+	if err := m.client.Delete(ctx, ns); err != nil && !errors.IsNotFound(err) {
+		return err
+	}
+
+	fmt.Println("Deleted successfully")
+
+	return nil
+}
+
+// This creates a new namespace using the generated name. Then populates the namespace with the initial allocation.
+// Then gives the current tenant admin the permissions.
+func (m *multiTenancyManager) SetupSubNamespace(ctx context.Context, s *multitenancyv1.SubNamespace) error {
+	subNamespaceName := utils.ResolveSubNamespaceName(s)
+
+	ns := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: subNamespaceName,
+			Labels: map[string]string{
+				"edge-net.io/generated": "true",
+				"edge-net.io/kind":      "sub",
+			},
+		},
+	}
+
+	// Try to create the namespace, continue even if it already exist
+	if err := m.client.Create(ctx, ns); err != nil && !errors.IsAlreadyExists(err) {
+		return err
+	}
+
+	// TODO: Create the role bingind etc.
 
 	return nil
 }

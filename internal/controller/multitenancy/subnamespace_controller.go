@@ -20,17 +20,21 @@ import (
 	"context"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	multitenancyv1 "github.com/edgenet-project/edgenet/api/multitenancy/v1"
+	"github.com/edgenet-project/edgenet/internal/multitenancy/v1"
+	"github.com/edgenet-project/edgenet/internal/utils"
 )
 
 // SubNamespaceReconciler reconciles a SubNamespace object
 type SubNamespaceReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme   *runtime.Scheme
+	recorder record.EventRecorder
 }
 
 //+kubebuilder:rbac:groups=multitenancy.edge-net.io,resources=subnamespaces,verbs=get;list;watch;create;update;patch;delete
@@ -47,15 +51,46 @@ type SubNamespaceReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.17.0/pkg/reconcile
 func (r *SubNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	logger := log.FromContext(ctx)
+	sns := multitenancyv1.SubNamespace{}
+	isMarkedForDeletion, reconcileResult, err := utils.GetResourceWithFinalizer(ctx, r.Client, &sns, req.NamespacedName)
 
-	// TODO(user): your logic here
+	if !utils.IsObjectInitialized(&sns) {
+		return reconcileResult, err
+	}
 
+	multiTenancyManager, err := multitenancy.NewMultiTenancyManager(ctx, r.Client)
+
+	if err != nil {
+		logger.Error(err, "cannot create multitenancy manager")
+		return ctrl.Result{}, err
+	}
+
+	if isMarkedForDeletion {
+		// Do a cleanup and allow tenant object for deletion
+		if err := multiTenancyManager.SubNamespaceCleanup(ctx, &sns); err != nil {
+			utils.RecordEventError(r.recorder, &sns, "SubNamespace cleanup failed")
+			return ctrl.Result{Requeue: true}, err
+		}
+
+		return utils.AllowObjectDeletion(ctx, r.Client, &sns)
+	} else {
+		// TODO: What to do now?
+		if err := multiTenancyManager.SetupSubNamespace(ctx, &sns); err != nil {
+			utils.RecordEventError(r.recorder, &sns, "SubNamespace setup failed")
+			return ctrl.Result{Requeue: true}, err
+		}
+	}
+
+	utils.RecordEventInfo(r.recorder, &sns, "SubNamespace reconciliation successfull")
 	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *SubNamespaceReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// Setup the event recorder
+	r.recorder = utils.GetEventRecorder(mgr)
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&multitenancyv1.SubNamespace{}).
 		Complete(r)

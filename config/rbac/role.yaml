@@ -42,6 +42,32 @@ rules:
 - apiGroups:
   - multitenancy.edge-net.io
   resources:
+  - subnamespaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - multitenancy.edge-net.io
+  resources:
+  - subnamespaces/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - multitenancy.edge-net.io
+  resources:
+  - subnamespaces/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - multitenancy.edge-net.io
+  resources:
   - tenants
   verbs:
   - create

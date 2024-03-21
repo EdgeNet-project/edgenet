@@ -17,14 +17,14 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"crypto/tls"
 	"flag"
+	"fmt"
 	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
-	"google.golang.org/appengine/log"
+
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -147,7 +147,8 @@ func main() {
 	disableNodeLabeller := err != nil
 
 	if err != nil {
-		log.Warningf(context.TODO(), "Cannot retrieve the MaxMind Account Token, running without the NodeLabeller")
+		fmt.Println("Skipping node labeller")
+		// log.Warningf(context.TODO(), "Cannot retrieve the MaxMind Account Token, running without the NodeLabeller")
 	}
 
 	// Setup reconcilers, we might want to add the list of reconcilers. This part is auto generated.
