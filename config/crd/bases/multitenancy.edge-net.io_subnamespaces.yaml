@@ -11,6 +11,8 @@ spec:
     kind: SubNamespace
     listKind: SubNamespaceList
     plural: subnamespaces
+    shortNames:
+    - sns
     singular: subnamespace
   scope: Namespaced
   versions:
