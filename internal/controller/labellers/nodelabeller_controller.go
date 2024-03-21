@@ -19,7 +19,7 @@ package labellers
 import (
 	"context"
 
-	"github.com/edgenet-project/edgenet/internal/labeller"
+	"github.com/edgenet-project/edgenet/internal/labeller/v1"
 	"github.com/edgenet-project/edgenet/internal/utils"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"

@@ -41,7 +41,7 @@ import (
 	multitenancyv1 "github.com/edgenet-project/edgenet/api/multitenancy/v1"
 	labellerscontroller "github.com/edgenet-project/edgenet/internal/controller/labellers"
 	multitenancycontroller "github.com/edgenet-project/edgenet/internal/controller/multitenancy"
-	"github.com/edgenet-project/edgenet/internal/labeller"
+	"github.com/edgenet-project/edgenet/internal/labeller/v1"
 	"github.com/edgenet-project/edgenet/internal/utils"
 	//+kubebuilder:scaffold:imports
 )
