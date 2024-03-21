@@ -18,7 +18,6 @@ package multitenancy
 
 import (
 	"context"
-	"fmt"
 
 	antreav1alpha1 "antrea.io/antrea/pkg/apis/crd/v1alpha1"
 	multitenancyv1 "github.com/edgenet-project/edgenet/api/multitenancy/v1"
@@ -395,8 +394,6 @@ func (m *multiTenancyManager) SubNamespaceCleanup(ctx context.Context, s *multit
 		return err
 	}
 
-	fmt.Println("Deleted successfully")
-
 	return nil
 }
 
@@ -411,6 +408,11 @@ func (m *multiTenancyManager) SetupSubNamespace(ctx context.Context, s *multiten
 			Labels: map[string]string{
 				"edge-net.io/generated": "true",
 				"edge-net.io/kind":      "sub",
+				"edge-net.io/parent":    s.GetNamespace(),
+			},
+			// The owner reference is required to ensure the namespace cannot be deleted before the subnamespace object.
+			OwnerReferences: []metav1.OwnerReference{
+				*metav1.NewControllerRef(s, s.GroupVersionKind()),
 			},
 		},
 	}
