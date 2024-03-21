@@ -76,7 +76,7 @@ type TenantStatus struct {
 // Tenant is the Schema for the tenants API
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:resource:scope=Cluster,shortName=tenant
 // +kubebuilder:printcolumn:name="Full Name",type="string",JSONPath=".spec.fullName"
 // +kubebuilder:printcolumn:name="URL",type="string",JSONPath=".spec.url"
 // +kubebuilder:printcolumn:name="Admin",type="string",JSONPath=".spec.admin"
