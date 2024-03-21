@@ -18,15 +18,6 @@ resources:
   kind: Tenant
   path: github.com/edgenet-project/edgenet/api/multitenancy/v1
   version: v1
-- api:
-    crdVersion: v1
-    namespaced: true
-  controller: true
-  domain: edge-net.io
-  group: multitenancy
-  kind: TenantResourceQuota
-  path: github.com/edgenet-project/edgenet/api/multitenancy/v1
-  version: v1
 - controller: true
   domain: edge-net.io
   group: labellers
