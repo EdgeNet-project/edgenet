@@ -57,7 +57,6 @@ var _ = Describe("Tenant Controller", func() {
 						Description:          "This is the description of the test user.",
 						Admin:                "testuser",
 						URL:                  "https://example.com",
-						Enabled:              true,
 						InitialRequest:       map[v1.ResourceName]resource.Quantity{},
 						ClusterNetworkPolicy: false,
 					},

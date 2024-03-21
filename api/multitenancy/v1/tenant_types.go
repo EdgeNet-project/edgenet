@@ -42,7 +42,6 @@ type TenantSpec struct {
 	// +kubebuilder:validation:MaxLength=200
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`
-	// old+kubebuilder:validation:Pattern=`^([a-zA-Z0-9._%+-]+@)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$`
 	Admin string `json:"admin"`
 
 	// Website of the tenant.
@@ -53,17 +52,13 @@ type TenantSpec struct {
 
 	// This represents the initial resource allocation for the tenant. If not specified, the tenant resource
 	// quota will not be created.
-	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:Required
 	InitialRequest map[corev1.ResourceName]resource.Quantity `json:"initialRequest"`
 
 	// Whether cluster-level network policies will be applied to tenant namespaces for security purposes.
 	// +kubebuilder:default=false
 	// +kubebuilder:validation:Optional
 	ClusterNetworkPolicy bool `json:"clusterNetworkPolicy"`
-
-	// If the tenant is active then this field is true.
-	// +kubebuilder:validation:Required
-	Enabled bool `json:"enabled"`
 }
 
 // TenantStatus defines the observed state of Tenant
@@ -85,7 +80,6 @@ type TenantStatus struct {
 // +kubebuilder:printcolumn:name="Full Name",type="string",JSONPath=".spec.fullName"
 // +kubebuilder:printcolumn:name="URL",type="string",JSONPath=".spec.url"
 // +kubebuilder:printcolumn:name="Admin",type="string",JSONPath=".spec.admin"
-// +kubebuilder:printcolumn:name="Enabled",type="boolean",JSONPath=".spec.enabled"
 type Tenant struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
