@@ -76,7 +76,7 @@ func main() {
 	flag.StringVar(&maxmindAccountId, "maxmind-accountid", "", "The account id of the maxmind geodatabase.")
 	flag.StringVar(&maxmindToken, "maxmind-token", "", "The access token of the maxmind geodatabase.")
 	flag.StringVar(&maxmindUrl, "maxmind-url", "https://geoip.maxmind.com/geoip/v2.1/city/", "The endpoint of the maxmind for the ip lookup to work.")
-	flag.Var(&disabledReconcilers, "disabled-reconcilers", "Comma seperated values of the reconciliers, Tenant,,SubNamespace...")
+	flag.Var(&disabledReconcilers, "disabled-reconcilers", "Comma seperated values of the reconciliers, Tenant,SubNamespace...")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
