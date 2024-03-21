@@ -29,7 +29,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	errorsLegacy "errors"
+
 	multitenancyv1 "github.com/edgenet-project/edgenet/api/multitenancy/v1"
+	"github.com/go-logr/logr"
 )
 
 // Define a custom type that implements the flag.Value interface
@@ -174,19 +177,23 @@ func GetEventRecorder(mgr ctrl.Manager) record.EventRecorder {
 }
 
 // Sends an error to the object using the event recorder. The type is error.
-func RecordEventError(r record.EventRecorder, obj client.Object, message string) {
-	if r == nil {
-		fmt.Println("Event recorder is nil.")
-	} else {
+func RecordEventError(l *logr.Logger, r record.EventRecorder, obj client.Object, message string) {
+	if l != nil {
+		l.Error(errorsLegacy.New("error"), message)
+	}
+
+	if r != nil {
 		r.Eventf(obj, "Warning", "Error", message)
 	}
 }
 
 // Sends an update event to the object using the event recorder.
-func RecordEventInfo(r record.EventRecorder, obj client.Object, message string) {
-	if r == nil {
-		fmt.Println("Event recorder is nil.")
-	} else {
+func RecordEventInfo(l *logr.Logger, r record.EventRecorder, obj client.Object, message string) {
+	if l != nil {
+		l.Info(message)
+	}
+
+	if r != nil {
 		r.Eventf(obj, "Normal", "Update", message)
 	}
 }

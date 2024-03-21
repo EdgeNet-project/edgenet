@@ -56,7 +56,7 @@ type TenantReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
 func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx)
+	l := log.FromContext(ctx)
 	tenant := multitenancyv1.Tenant{}
 	isMarkedForDeletion, reconcileResult, err := utils.GetResourceWithFinalizer(ctx, r.Client, &tenant, req.NamespacedName)
 
@@ -67,14 +67,14 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	multiTenancyManager, err := multitenancy.NewMultiTenancyManager(ctx, r.Client)
 
 	if err != nil {
-		logger.Error(err, "cannot create multitenancy manager")
+		l.Error(err, "cannot create multitenancy manager")
 		return ctrl.Result{}, err
 	}
 
 	if isMarkedForDeletion {
 		// Do a cleanup and allow tenant object for deletion
 		if err := multiTenancyManager.TenantCleanup(ctx, &tenant); err != nil {
-			utils.RecordEventError(r.recorder, &tenant, "Tenant cleanup failed")
+			utils.RecordEventError(&l, r.recorder, &tenant, "Tenant cleanup failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 
@@ -82,25 +82,25 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	} else {
 		// Create a core namespace for the tenant.
 		if err := multiTenancyManager.CreateCoreNamespaceLocal(ctx, &tenant); err != nil {
-			utils.RecordEventError(r.recorder, &tenant, "Tenant Core Namespace creation failed")
+			utils.RecordEventError(&l, r.recorder, &tenant, "Tenant Core Namespace creation failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 
 		// Create the role binding in the core namespace of the tenant.
 		if err := multiTenancyManager.CreateTenantAdminRoleBinding(ctx, &tenant); err != nil {
-			utils.RecordEventError(r.recorder, &tenant, "Tenant admin role binding failed")
+			utils.RecordEventError(&l, r.recorder, &tenant, "Tenant admin role binding failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 
 		// Create the network policy. This restricts pod communication. Don't need to clean after
 		// deletion of the tenant.
 		if err := multiTenancyManager.CreateTenantNetworkPolicy(ctx, &tenant); err != nil {
-			utils.RecordEventError(r.recorder, &tenant, "Tenant antrea network policy failed")
+			utils.RecordEventError(&l, r.recorder, &tenant, "Tenant antrea network policy failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 	}
 
-	utils.RecordEventInfo(r.recorder, &tenant, "Tenant reconciliation successfull")
+	utils.RecordEventInfo(&l, r.recorder, &tenant, "Tenant reconciliation successfull")
 	return ctrl.Result{}, nil
 }
 

@@ -51,7 +51,7 @@ type SubNamespaceReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.17.0/pkg/reconcile
 func (r *SubNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx)
+	l := log.FromContext(ctx)
 	sns := multitenancyv1.SubNamespace{}
 	isMarkedForDeletion, reconcileResult, err := utils.GetResourceWithFinalizer(ctx, r.Client, &sns, req.NamespacedName)
 
@@ -62,27 +62,27 @@ func (r *SubNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	multiTenancyManager, err := multitenancy.NewMultiTenancyManager(ctx, r.Client)
 
 	if err != nil {
-		logger.Error(err, "cannot create multitenancy manager")
+		l.Error(err, "cannot create multitenancy manager")
 		return ctrl.Result{}, err
 	}
 
 	if isMarkedForDeletion {
 		// Do a cleanup and allow tenant object for deletion
 		if err := multiTenancyManager.SubNamespaceCleanup(ctx, &sns); err != nil {
-			utils.RecordEventError(r.recorder, &sns, "SubNamespace cleanup failed")
+			utils.RecordEventError(&l, r.recorder, &sns, "SubNamespace cleanup failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 
 		return utils.AllowObjectDeletion(ctx, r.Client, &sns)
 	} else {
-		// TODO: What to do now?
+		// Run the setup, this might be divided into create_subnamespace + create_rolebinding
 		if err := multiTenancyManager.SetupSubNamespace(ctx, &sns); err != nil {
-			utils.RecordEventError(r.recorder, &sns, "SubNamespace setup failed")
+			utils.RecordEventError(&l, r.recorder, &sns, "SubNamespace setup failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 	}
 
-	utils.RecordEventInfo(r.recorder, &sns, "SubNamespace reconciliation successfull")
+	utils.RecordEventInfo(&l, r.recorder, &sns, "SubNamespace reconciliation successfull")
 	return ctrl.Result{}, nil
 }
 
