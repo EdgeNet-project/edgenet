@@ -19,7 +19,6 @@ package main
 import (
 	"crypto/tls"
 	"flag"
-	"fmt"
 	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -147,8 +146,7 @@ func main() {
 	disableNodeLabeller := err != nil
 
 	if err != nil {
-		fmt.Println("Skipping node labeller")
-		// log.Warningf(context.TODO(), "Cannot retrieve the MaxMind Account Token, running without the NodeLabeller")
+		setupLog.Info("Cannot retrieve the MaxMind Account Token, running without the NodeLabeller")
 	}
 
 	// Setup reconcilers, we might want to add the list of reconcilers. This part is auto generated.
