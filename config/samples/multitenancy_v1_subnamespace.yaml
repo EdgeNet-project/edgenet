@@ -1,0 +1,12 @@
+apiVersion: multitenancy.edge-net.io/v1
+kind: SubNamespace
+metadata:
+  labels:
+    app.kubernetes.io/name: subnamespace
+    app.kubernetes.io/instance: subnamespace-sample
+    app.kubernetes.io/part-of: edgenet
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: edgenet
+  name: subnamespace-sample
+spec:
+  # TODO(user): Add fields here

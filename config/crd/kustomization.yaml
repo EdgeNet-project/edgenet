@@ -6,17 +6,20 @@ resources:
 # - edgenet_system_namespace.yaml
 - secrets/maxmind_secret.yaml
 - bases/multitenancy.edge-net.io_tenants.yaml
+- bases/multitenancy.edge-net.io_subnamespaces.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patches:
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix.
 # patches here are for enabling the conversion webhook for each CRD
 #- path: patches/webhook_in_multitenancy_tenants.yaml
+#- path: patches/webhook_in_multitenancy_subnamespaces.yaml
 #+kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CERTMANAGER] To enable cert-manager, uncomment all the sections with [CERTMANAGER] prefix.
 # patches here are for enabling the CA injection for each CRD
 #- path: patches/cainjection_in_multitenancy_tenants.yaml
+#- path: patches/cainjection_in_multitenancy_subnamespaces.yaml
 #+kubebuilder:scaffold:crdkustomizecainjectionpatch
 
 # [WEBHOOK] To enable webhook, uncomment the following section
