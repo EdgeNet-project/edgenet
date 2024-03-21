@@ -19,6 +19,7 @@ package utils
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -43,9 +44,11 @@ func (s *FlagList) String() string {
 	return fmt.Sprintf("%v", *s)
 }
 
+// Checks if the given flag is contained in the flag list. The check is performed
+// without regarding capitalization (used strings.EqualFold).
 func (s *FlagList) Contains(flag string) bool {
 	for _, f := range *s {
-		if f == flag {
+		if strings.EqualFold(f, flag) {
 			return true
 		}
 	}
