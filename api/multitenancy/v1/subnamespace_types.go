@@ -38,9 +38,9 @@ type SubNamespaceStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:resource:scope=Namespaced,shortName=sns
 // SubNamespace is the Schema for the subnamespaces API
 type SubNamespace struct {
 	metav1.TypeMeta   `json:",inline"`
