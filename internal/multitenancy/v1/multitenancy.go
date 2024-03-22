@@ -389,7 +389,7 @@ func (m *multiTenancyManager) SubNamespaceCleanup(ctx context.Context, s *multit
 		},
 	}
 
-	// Try to delete the namespace, ignore if not found
+	// Then finally try to delete the namespace
 	if err := m.client.Delete(ctx, ns); err != nil && !errors.IsNotFound(err) {
 		return err
 	}
@@ -410,10 +410,8 @@ func (m *multiTenancyManager) SetupSubNamespace(ctx context.Context, s *multiten
 				"edge-net.io/kind":      "sub",
 				"edge-net.io/parent":    s.GetNamespace(),
 			},
-			// The owner reference is required to ensure the namespace cannot be deleted before the subnamespace object.
-			OwnerReferences: []metav1.OwnerReference{
-				*metav1.NewControllerRef(s, s.GroupVersionKind()),
-			},
+			// We will use admission controller to prevent namespaces that are managed by the subnamespace controller from deleting.
+			// So we will not have finalizers and owners in the newly created object.
 		},
 	}
 

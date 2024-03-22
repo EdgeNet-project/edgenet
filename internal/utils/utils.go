@@ -70,7 +70,7 @@ func ResolveSubNamespaceName(s *multitenancyv1.SubNamespace) string {
 }
 
 // Check a string exists in a list of strings
-func containsFinalizer(finalizers []string, finalizer string) bool {
+func ContainsFinalizer(finalizers []string, finalizer string) bool {
 	for _, item := range finalizers {
 		if item == finalizer {
 			return true
@@ -80,7 +80,7 @@ func containsFinalizer(finalizers []string, finalizer string) bool {
 }
 
 // Remove a string from a list of strings
-func removeFinalizer(finalizers []string, finalizer string) []string {
+func RemoveFinalizer(finalizers []string, finalizer string) []string {
 	for i, item := range finalizers {
 		if item == finalizer {
 			// Remove the item at index i from slice.
@@ -116,7 +116,7 @@ func GetResourceWithFinalizer(ctx context.Context, c client.Client, obj client.O
 	}
 
 	// If the object is not marked for deletion and doesn't contain the finalizer
-	if obj.GetDeletionTimestamp().IsZero() && !containsFinalizer(obj.GetFinalizers(), "edge-net.io/controller") {
+	if obj.GetDeletionTimestamp().IsZero() && !ContainsFinalizer(obj.GetFinalizers(), "edge-net.io/controller") {
 		obj.SetFinalizers(append(obj.GetFinalizers(), "edge-net.io/controller"))
 
 		if err := c.Update(ctx, obj); err != nil {
@@ -145,7 +145,7 @@ func GetResource(ctx context.Context, c client.Client, obj client.Object, namesp
 // AllowObjectDeletion method removes the edge-net.io/controller finalizer. By this way the object can be completely removed
 // from the cluster.
 func AllowObjectDeletion(ctx context.Context, c client.Client, obj client.Object) (reconcile.Result, error) {
-	obj.SetFinalizers(removeFinalizer(obj.GetFinalizers(), "edge-net.io/controller"))
+	obj.SetFinalizers(RemoveFinalizer(obj.GetFinalizers(), "edge-net.io/controller"))
 
 	if err := c.Update(ctx, obj); err != nil {
 		return reconcile.Result{}, err
