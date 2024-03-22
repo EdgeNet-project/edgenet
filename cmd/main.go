@@ -175,12 +175,14 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	if err = (&multitenancycontroller.SubNamespaceReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "SubNamespace")
-		os.Exit(1)
+	if !disabledReconcilers.Contains("SubNamespace") {
+		if err = (&multitenancycontroller.SubNamespaceReconciler{
+			Client: mgr.GetClient(),
+			Scheme: mgr.GetScheme(),
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "SubNamespace")
+			os.Exit(1)
+		}
 	}
 	//+kubebuilder:scaffold:builder
 
