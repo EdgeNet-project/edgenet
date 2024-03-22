@@ -18,6 +18,7 @@ package multitenancy
 
 import (
 	"context"
+	errors2 "errors"
 
 	antreav1alpha1 "antrea.io/antrea/pkg/apis/crd/v1alpha1"
 	multitenancyv1 "github.com/edgenet-project/edgenet/api/multitenancy/v1"
@@ -421,6 +422,94 @@ func (m *multiTenancyManager) SetupSubNamespace(ctx context.Context, s *multiten
 	}
 
 	// TODO: Create the role bingind etc.
+	t, err := m.getRootTenant(ctx, s)
 
+	if err != nil {
+		return err
+	}
+
+	// Retrieve the role bingind, if already exists, do nothing.
+	roleBinding := &rbacv1.RoleBinding{}
+	err = m.client.Get(ctx,
+		types.NamespacedName{
+			// The name of the rolebinding should be TenantAdminRoleName and Namespace should be core namespace
+			Name:      multitenancyv1.TenantAdminRoleName,
+			Namespace: subNamespaceName,
+		}, roleBinding)
+
+	// If it doesn't exsist then create it.
+	if err != nil {
+		// Create the role binding
+		if errors.IsNotFound(err) {
+			roleBinding = &rbacv1.RoleBinding{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      multitenancyv1.TenantAdminRoleName,
+					Namespace: subNamespaceName,
+					Labels: map[string]string{
+						"edge-net.io/generated":    "true",
+						"edge-net.io/notification": "true",
+					},
+				},
+				Subjects: []rbacv1.Subject{
+					{
+						Kind:     "User",
+						APIGroup: "rbac.authorization.k8s.io",
+						Name:     t.Spec.Admin,
+					},
+				},
+				RoleRef: rbacv1.RoleRef{
+					Kind: "ClusterRole",
+					Name: multitenancyv1.TenantAdminRoleName,
+				},
+			}
+
+			return m.client.Create(ctx, roleBinding)
+		}
+		return err
+	}
 	return nil
+}
+
+// Gets the tenant of the topmost namespace in the subnamespace hierarchy.
+func (m *multiTenancyManager) getRootTenant(ctx context.Context, s *multitenancyv1.SubNamespace) (*multitenancyv1.Tenant, error) {
+	// Start with the current namespace then go up.
+	currentNamespaceName := utils.ResolveSubNamespaceName(s)
+
+	// This should be limited in case there happens to be a loop. for now limit this to 255. A Map or a Set can be used here
+	// to check if the current namespace is traversed before.
+	for i := 0; i < 255; i++ {
+		currentNamespace := &corev1.Namespace{}
+		// Try to get the namespace, if there is an error immidietly return.
+		if err := m.client.Get(ctx, types.NamespacedName{Name: currentNamespaceName}, currentNamespace); err != nil {
+			return nil, err
+		}
+
+		if namespaceType, ok := currentNamespace.GetLabels()["edge-net.io/kind"]; !ok {
+			return nil, errors2.New("currently traversed namespace doesn't have required labels")
+		} else {
+			// If the type of the namespace is core then get the tenant with the same name
+			if namespaceType == "core" {
+				tenant := &multitenancyv1.Tenant{}
+
+				// Try to get the tenant with the same name as the tenant.
+				if err := m.client.Get(ctx, types.NamespacedName{Name: currentNamespace.Name}, tenant); err != nil {
+					return nil, err
+				}
+
+				// Happy ending
+				return tenant, nil
+			} else if namespaceType == "sub" {
+				if namespaceParent, ok := currentNamespace.GetLabels()["edge-net.io/parent"]; !ok {
+					return nil, errors2.New("cannot get label on namespace, 'edge-net.io/parent'")
+				} else {
+					// Change the current namespace to the current namespace's parent name, essentially go up in the tree.
+					currentNamespaceName = namespaceParent
+				}
+			} else {
+				return nil, errors2.New("unknown label type for namespace, 'edge-net.io/kind' can only be 'core' or 'sub'")
+			}
+		}
+	}
+
+	return nil, errors2.New("subnamespace traverse limit exceeded, there might be a loop in the subnamespace hierarchy")
 }
