@@ -1,6 +1,6 @@
 
 # Image URL to use all building/pushing image targets
-IMG ?= edgenetio/edgenet-controller:latest
+IMG ?= edgenetio/edgenet-controller:main
 YAML_PATH=build/installer.yaml
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.29.0
