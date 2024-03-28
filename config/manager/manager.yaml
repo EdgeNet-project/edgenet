@@ -80,7 +80,8 @@ spec:
         # Try to mount the secret where it is filled in the secrets/maxmind_secret.yaml
         # The controller trys to read from the 1. args, 2. environment variables, 3. the secrets in this path.
         - mountPath: "/var/run/secrets/edge-net.io/maxmind-secret"
-          name: "maxmind-secret"
+          readOnly: true
+          name: maxmind-credentials
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -109,3 +110,7 @@ spec:
             memory: 64Mi
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
+      volumes:
+      - name: maxmind-credentials
+        secret:
+          secretName: maxmind-secret
