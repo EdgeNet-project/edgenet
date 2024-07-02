@@ -5,7 +5,7 @@ YAML_PATH=build/installer.yaml
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.29.0
 # This should be same as the antrea version in go.mod file since it is using that version in the library.
-ANTREA_VERSION=v1.15.0
+ANTREA_VERSION=v1.15.2
 ignore-not-found=true
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -128,6 +128,15 @@ build-installer: manifests generate kustomize ## Generate a consolidated YAML wi
 	echo "---" >> dist/install.yaml  # Add a document separator before appending
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default >> dist/install.yaml
+
+##
+# Build YAML file that can be used for deployment
+dist: manifests kustomize
+	mkdir -p dist/yaml
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build config/crd > dist/yaml/crd.yaml
+	$(KUSTOMIZE) build config/rbac > dist/yaml/rbac.yaml
+	$(KUSTOMIZE) build config/default > dist/yaml/default.yaml
 
 ##@ Deployment
 
