@@ -57,7 +57,7 @@ spec:
                   The username for some cases can also be emails. This was the old method. But with different identity
                   providers this can be any name.
                 maxLength: 200
-                pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                pattern: ^[a-z0-9]([-.@_a-z0-9]*[a-z0-9])?$
                 type: string
               clusterNetworkPolicy:
                 default: false

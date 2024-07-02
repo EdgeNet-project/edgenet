@@ -41,7 +41,7 @@ type TenantSpec struct {
 	// providers this can be any name.
 	// +kubebuilder:validation:MaxLength=200
 	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`
+	// +kubebuilder:validation:Pattern=`^[a-z0-9]([-.@_a-z0-9]*[a-z0-9])?$`
 	Admin string `json:"admin"`
 
 	// Website of the tenant.
