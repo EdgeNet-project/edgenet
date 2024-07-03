@@ -3,7 +3,7 @@
 IMG ?= edgenetio/edgenet-controller:main
 YAML_PATH=build/installer.yaml
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.29.0
+ENVTEST_K8S_VERSION = 1.30.0
 # This should be same as the antrea version in go.mod file since it is using that version in the library.
 ANTREA_VERSION=v1.15.2
 ignore-not-found=true
