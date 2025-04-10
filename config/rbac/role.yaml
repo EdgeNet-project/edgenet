@@ -68,7 +68,7 @@ rules:
 - apiGroups:
   - multitenancy.edge-net.io
   resources:
-  - tenants
+  - teams
   verbs:
   - create
   - delete
@@ -80,13 +80,13 @@ rules:
 - apiGroups:
   - multitenancy.edge-net.io
   resources:
-  - tenants/finalizers
+  - teams/finalizers
   verbs:
   - update
 - apiGroups:
   - multitenancy.edge-net.io
   resources:
-  - tenants/status
+  - teams/status
   verbs:
   - get
   - patch

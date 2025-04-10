@@ -67,7 +67,7 @@ func (r *SubNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	if isMarkedForDeletion {
-		// Do a cleanup and allow tenant object for deletion
+		// Do a cleanup and allow team object for deletion
 		if err := multiTenancyManager.SubNamespaceCleanup(ctx, &sns); err != nil {
 			utils.RecordEventError(&l, r.recorder, &sns, "SubNamespace cleanup failed")
 			return ctrl.Result{Requeue: true}, err

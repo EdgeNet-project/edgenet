@@ -72,7 +72,7 @@ spec:
         - --leader-elect
         # This argument is used for disabling certain reconcilers. The reconciler names should be 
         # given as a comma seperated case sensitive list of reconciler names in singlular form.
-        # --disabled-reconcilers="Tenant,SubNamespace"
+        # --disabled-reconcilers="Team,SubNamespace"
         - --disabled-reconcilers=""
         image: controller
         name: manager

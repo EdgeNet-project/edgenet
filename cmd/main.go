@@ -75,7 +75,7 @@ func main() {
 	flag.StringVar(&maxmindAccountId, "maxmind-accountid", "", "The account id of the maxmind geodatabase.")
 	flag.StringVar(&maxmindToken, "maxmind-token", "", "The access token of the maxmind geodatabase.")
 	flag.StringVar(&maxmindUrl, "maxmind-url", "https://geoip.maxmind.com/geoip/v2.1/city/", "The endpoint of the maxmind for the ip lookup to work.")
-	flag.Var(&disabledReconcilers, "disabled-reconcilers", "Comma seperated values of the reconciliers, Tenant,SubNamespace...")
+	flag.Var(&disabledReconcilers, "disabled-reconcilers", "Comma seperated values of the reconciliers, Team,SubNamespace...")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -153,12 +153,12 @@ func main() {
 	// If you want to add the functionality to disable reconcilers, put it inside an if.
 	// WARNING: This part is semi-auto-generated! By default you cannot disable reconcilers since they are
 	// generated autside an if clause. ADD YOUR IF CLAUSE MANUALLY!
-	if !disabledReconcilers.Contains("Tenant") {
-		if err = (&multitenancycontroller.TenantReconciler{
+	if !disabledReconcilers.Contains("Team") {
+		if err = (&multitenancycontroller.TeamReconciler{
 			Client: mgr.GetClient(),
 			Scheme: mgr.GetScheme(),
 		}).SetupWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", "Tenant")
+			setupLog.Error(err, "unable to create controller", "controller", "Team")
 			os.Exit(1)
 		}
 	}

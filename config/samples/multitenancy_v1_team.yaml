@@ -1,9 +1,9 @@
 apiVersion: multitenancy.edge-net.io/v1
-kind: Tenant
+kind: Team
 metadata:
   labels:
-    app.kubernetes.io/name: tenant
-    app.kubernetes.io/instance: tenant-sample
+    app.kubernetes.io/name: team
+    app.kubernetes.io/instance: team-sample
     app.kubernetes.io/part-of: edgenet
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: edgenet

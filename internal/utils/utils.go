@@ -60,9 +60,9 @@ func (s *FlagList) Contains(flag string) bool {
 	return false
 }
 
-// Resolve the core-namespace from tenant name (simply take the object name)
-func ResolveCoreNamespaceName(tenantName string) string {
-	return tenantName
+// Resolve the core-namespace from team name (simply take the object name)
+func ResolveCoreNamespaceName(teamName string) string {
+	return teamName
 }
 
 func ResolveSubNamespaceName(s *multitenancyv1.SubNamespace) string {
@@ -96,14 +96,14 @@ func RemoveFinalizer(finalizers []string, finalizer string) []string {
 // Return values are (isDeleted, response, error)
 // Intended use:
 //
-//	tenant := &v1.Tenant{}
+//	team := &v1.Team{}
 //	isMarkedForDeletion, res, err := utils.GetResourceWithFinalizer(
 //		ctx,
 //		client,
-//		tenant,
+//		team,
 //		namespacedName)
 //
-//	if !utils.IsObjectInitialized(tenant) {
+//	if !utils.IsObjectInitialized(team) {
 //		return res, err
 //	}
 func GetResourceWithFinalizer(ctx context.Context, c client.Client, obj client.Object, namespacedName types.NamespacedName) (bool, ctrl.Result, error) {

@@ -1,20 +1,20 @@
-# permissions for end users to edit tenants.
+# permissions for end users to edit teams.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: tenant-editor-role
+    app.kubernetes.io/instance: team-editor-role
     app.kubernetes.io/component: rbac
     app.kubernetes.io/created-by: edgenet
     app.kubernetes.io/part-of: edgenet
     app.kubernetes.io/managed-by: kustomize
-  name: tenant-editor-role
+  name: team-editor-role
 rules:
 - apiGroups:
   - multitenancy.edge-net.io
   resources:
-  - tenants
+  - teams
   verbs:
   - create
   - delete
@@ -26,6 +26,6 @@ rules:
 - apiGroups:
   - multitenancy.edge-net.io
   resources:
-  - tenants/status
+  - teams/status
   verbs:
   - get

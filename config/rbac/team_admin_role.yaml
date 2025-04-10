@@ -1,21 +1,21 @@
-# permissions for end users to view tenants.
+# permissions for end users to view teams.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: tenant-admin-role
+    app.kubernetes.io/instance: team-admin-role
     app.kubernetes.io/component: rbac
     app.kubernetes.io/created-by: edgenet
     app.kubernetes.io/part-of: edgenet
     app.kubernetes.io/managed-by: kustomize
     edge-net.io/generated: "true"
-  name: edgenet:tenant-admin
+  name: edgenet:team-admin
 rules:
 - apiGroups:
   - multitenancy.edge-net.io
   resources:
-  - tenants
+  - teams
   verbs:
   - create
   - delete

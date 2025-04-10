@@ -30,37 +30,37 @@ import (
 	"github.com/edgenet-project/edgenet/internal/utils"
 )
 
-// TenantReconciler reconciles a Tenant object
-type TenantReconciler struct {
+// TeamReconciler reconciles a Team object
+type TeamReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
 	recorder record.EventRecorder
 }
 
 // These are required to have the permissions.
-//+kubebuilder:rbac:groups="multitenancy.edge-net.io",resources=tenants,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="multitenancy.edge-net.io",resources=teams,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=rolebindings,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="networking.k8s.io",resources=networkpolicies;clusternetworkpolicies,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="crd.antrea.io",resources=clusternetworkpolicies,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="multitenancy.edge-net.io",resources=tenants/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups="multitenancy.edge-net.io",resources=tenants/finalizers,verbs=update
+//+kubebuilder:rbac:groups="multitenancy.edge-net.io",resources=teams/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups="multitenancy.edge-net.io",resources=teams/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
-// the Tenant object against the actual cluster state, and then
+// the Team object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
-func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	l := log.FromContext(ctx)
-	tenant := multitenancyv1.Tenant{}
-	isMarkedForDeletion, reconcileResult, err := utils.GetResourceWithFinalizer(ctx, r.Client, &tenant, req.NamespacedName)
+	team := multitenancyv1.Team{}
+	isMarkedForDeletion, reconcileResult, err := utils.GetResourceWithFinalizer(ctx, r.Client, &team, req.NamespacedName)
 
-	if !utils.IsObjectInitialized(&tenant) {
+	if !utils.IsObjectInitialized(&team) {
 		return reconcileResult, err
 	}
 
@@ -72,44 +72,44 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	if isMarkedForDeletion {
-		// Do a cleanup and allow tenant object for deletion
-		if err := multiTenancyManager.TenantCleanup(ctx, &tenant); err != nil {
-			utils.RecordEventError(&l, r.recorder, &tenant, "Tenant cleanup failed")
+		// Do a cleanup and allow team object for deletion
+		if err := multiTenancyManager.TeamCleanup(ctx, &team); err != nil {
+			utils.RecordEventError(&l, r.recorder, &team, "Team cleanup failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 
-		return utils.AllowObjectDeletion(ctx, r.Client, &tenant)
+		return utils.AllowObjectDeletion(ctx, r.Client, &team)
 	} else {
-		// Create a core namespace for the tenant.
-		if err := multiTenancyManager.CreateCoreNamespaceLocal(ctx, &tenant); err != nil {
-			utils.RecordEventError(&l, r.recorder, &tenant, "Tenant Core Namespace creation failed")
+		// Create a core namespace for the team.
+		if err := multiTenancyManager.CreateCoreNamespaceLocal(ctx, &team); err != nil {
+			utils.RecordEventError(&l, r.recorder, &team, "Team Core Namespace creation failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 
-		// Create the role binding in the core namespace of the tenant.
-		if err := multiTenancyManager.CreateTenantAdminRoleBinding(ctx, &tenant); err != nil {
-			utils.RecordEventError(&l, r.recorder, &tenant, "Tenant admin role binding failed")
+		// Create the role binding in the core namespace of the team.
+		if err := multiTenancyManager.CreateTeamAdminRoleBinding(ctx, &team); err != nil {
+			utils.RecordEventError(&l, r.recorder, &team, "Team admin role binding failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 
 		// Create the network policy. This restricts pod communication. Don't need to clean after
-		// deletion of the tenant.
-		if err := multiTenancyManager.CreateTenantNetworkPolicy(ctx, &tenant); err != nil {
-			utils.RecordEventError(&l, r.recorder, &tenant, "Tenant antrea network policy failed")
+		// deletion of the team.
+		if err := multiTenancyManager.CreateTeamNetworkPolicy(ctx, &team); err != nil {
+			utils.RecordEventError(&l, r.recorder, &team, "Team antrea network policy failed")
 			return ctrl.Result{Requeue: true}, err
 		}
 	}
 
-	utils.RecordEventInfo(&l, r.recorder, &tenant, "Tenant reconciliation successfull")
+	utils.RecordEventInfo(&l, r.recorder, &team, "Team reconciliation successfull")
 	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *TenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// Setup the event recorder
 	r.recorder = utils.GetEventRecorder(mgr)
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&multitenancyv1.Tenant{}).
+		For(&multitenancyv1.Team{}).
 		Complete(r)
 }

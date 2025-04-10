@@ -37,23 +37,23 @@ import (
 // multi tenancy. Most of the implementation here is retrieved from the old implementation.
 // However, some of the functions are changed.
 type MultiTenancyManager interface {
-	// Remove the tenant and all of the other artifacts created with it including,
-	// subtenants, subnamespaces etc.
-	TenantCleanup(context.Context, *multitenancyv1.Tenant) error
+	// Remove the team and all of the other artifacts created with it including,
+	// subteams, subnamespaces etc.
+	TeamCleanup(context.Context, *multitenancyv1.Team) error
 
-	// Creates a core namespace (same name with the tenant) and sets the resource allocation.
+	// Creates a core namespace (same name with the team) and sets the resource allocation.
 	// Returns nil, if the namespace already exists.
-	CreateCoreNamespace(context.Context, *multitenancyv1.Tenant, types.UID) error
+	CreateCoreNamespace(context.Context, *multitenancyv1.Team, types.UID) error
 
 	// Same as the CreateCoreNamespace except gets the UID from local cluster.
-	CreateCoreNamespaceLocal(context.Context, *multitenancyv1.Tenant) error
+	CreateCoreNamespaceLocal(context.Context, *multitenancyv1.Team) error
 
-	// Creates a new tenant role binding with admin priviliages. Requires "edgenet:tenant-admin" role
+	// Creates a new team role binding with admin priviliages. Requires "edgenet:team-admin" role
 	// to work.
-	CreateTenantAdminRoleBinding(context.Context, *multitenancyv1.Tenant) error
+	CreateTeamAdminRoleBinding(context.Context, *multitenancyv1.Team) error
 
 	// Create the network policy. If specified creates the cluster network policy as well.
-	CreateTenantNetworkPolicy(context.Context, *multitenancyv1.Tenant) error
+	CreateTeamNetworkPolicy(context.Context, *multitenancyv1.Team) error
 
 	// Cleanups the SubNamespace
 	SubNamespaceCleanup(context.Context, *multitenancyv1.SubNamespace) error
@@ -73,7 +73,7 @@ func NewMultiTenancyManager(ctx context.Context, client client.Client) (MultiTen
 	}, nil
 }
 
-func (m *multiTenancyManager) TenantCleanup(ctx context.Context, t *multitenancyv1.Tenant) error {
+func (m *multiTenancyManager) TeamCleanup(ctx context.Context, t *multitenancyv1.Team) error {
 	// The core namespace should automatically deleted because of the owner references.
 	// // Get the corenamespace name
 	// coreNamespaceName := ResolveCoreNamespaceName(t.Name)
@@ -93,7 +93,7 @@ func (m *multiTenancyManager) TenantCleanup(ctx context.Context, t *multitenancy
 
 // Same as the CreateCoreNamespace except automaticaly populates the cluster UID from the local
 // Cluster's kube-system namesapce
-func (m *multiTenancyManager) CreateCoreNamespaceLocal(ctx context.Context, t *multitenancyv1.Tenant) error {
+func (m *multiTenancyManager) CreateCoreNamespaceLocal(ctx context.Context, t *multitenancyv1.Team) error {
 	clusterUID, err := utils.GetClusterUID(ctx, m.client)
 
 	if err != nil {
@@ -105,7 +105,7 @@ func (m *multiTenancyManager) CreateCoreNamespaceLocal(ctx context.Context, t *m
 
 // Creates a core namespace, sets the ownership references and does resource allocation.
 // The clusterUID is given as a future federation concept. Also creates a ResourceQuota object.
-func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *multitenancyv1.Tenant, clusterUID types.UID) error {
+func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *multitenancyv1.Team, clusterUID types.UID) error {
 	// Get the corenamespace name
 	coreNamespaceName := utils.ResolveCoreNamespaceName(t.Name)
 	coreNamespaceObjectKey := client.ObjectKey{Name: coreNamespaceName}
@@ -115,9 +115,9 @@ func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *multit
 	err := m.client.Get(ctx, coreNamespaceObjectKey, &coreNamespace)
 
 	labels := map[string]string{
-		"edge-net.io/tenant":      t.GetName(),
+		"edge-net.io/team":        t.GetName(),
 		"edge-net.io/kind":        "core",
-		"edge-net.io/tenant-uid":  string(t.GetUID()),
+		"edge-net.io/team-uid":    string(t.GetUID()),
 		"edge-net.io/cluster-uid": string(clusterUID),
 		"edge-net.io/generated":   "true",
 	}
@@ -184,15 +184,15 @@ func (m *multiTenancyManager) CreateCoreNamespace(ctx context.Context, t *multit
 	return nil
 }
 
-// This creates a role binding for the tenant. The role binding will be created inside the core namespace of the
-// tenant. By this way the tenant's permissions will be contained inside the core namespace.
-func (m *multiTenancyManager) CreateTenantAdminRoleBinding(ctx context.Context, t *multitenancyv1.Tenant) error {
+// This creates a role binding for the team. The role binding will be created inside the core namespace of the
+// team. By this way the team's permissions will be contained inside the core namespace.
+func (m *multiTenancyManager) CreateTeamAdminRoleBinding(ctx context.Context, t *multitenancyv1.Team) error {
 	// Retrieve the role bingind, if already exists, do nothing.
 	roleBinding := &rbacv1.RoleBinding{}
 	err := m.client.Get(ctx,
 		types.NamespacedName{
-			// The name of the rolebinding should be TenantAdminRoleName and Namespace should be core namespace
-			Name:      multitenancyv1.TenantAdminRoleName,
+			// The name of the rolebinding should be TeamAdminRoleName and Namespace should be core namespace
+			Name:      multitenancyv1.TeamAdminRoleName,
 			Namespace: utils.ResolveCoreNamespaceName(t.GetName()),
 		}, roleBinding)
 
@@ -202,7 +202,7 @@ func (m *multiTenancyManager) CreateTenantAdminRoleBinding(ctx context.Context, 
 		if errors.IsNotFound(err) {
 			roleBinding = &rbacv1.RoleBinding{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      multitenancyv1.TenantAdminRoleName,
+					Name:      multitenancyv1.TeamAdminRoleName,
 					Namespace: utils.ResolveCoreNamespaceName(t.GetName()),
 					Labels: map[string]string{
 						"edge-net.io/generated":    "true",
@@ -218,7 +218,7 @@ func (m *multiTenancyManager) CreateTenantAdminRoleBinding(ctx context.Context, 
 				},
 				RoleRef: rbacv1.RoleRef{
 					Kind: "ClusterRole",
-					Name: multitenancyv1.TenantAdminRoleName,
+					Name: multitenancyv1.TeamAdminRoleName,
 				},
 			}
 
@@ -229,8 +229,8 @@ func (m *multiTenancyManager) CreateTenantAdminRoleBinding(ctx context.Context, 
 	return nil
 }
 
-// Create the network policy, if specified in the tenant create the cluster network policy as well.
-func (m *multiTenancyManager) CreateTenantNetworkPolicy(ctx context.Context, t *multitenancyv1.Tenant) error {
+// Create the network policy, if specified in the team create the cluster network policy as well.
+func (m *multiTenancyManager) CreateTeamNetworkPolicy(ctx context.Context, t *multitenancyv1.Team) error {
 	clusterUID, err := utils.GetClusterUID(ctx, m.client)
 	if err != nil {
 		return err
@@ -240,9 +240,9 @@ func (m *multiTenancyManager) CreateTenantNetworkPolicy(ctx context.Context, t *
 	endPort := int32(32768)
 	labelSelector := metav1.LabelSelector{
 		MatchLabels: map[string]string{
-			"edge-net.io/subtenant":   "false",
-			"edge-net.io/tenant":      t.GetName(),
-			"edge-net.io/tenant-uid":  string(t.GetUID()),
+			"edge-net.io/subteam":     "false",
+			"edge-net.io/team":        t.GetName(),
+			"edge-net.io/team-uid":    string(t.GetUID()),
 			"edge-net.io/cluster-uid": string(clusterUID),
 		},
 	}
@@ -252,7 +252,7 @@ func (m *multiTenancyManager) CreateTenantNetworkPolicy(ctx context.Context, t *
 		ObjectMeta: metav1.ObjectMeta{
 			// The name is fixed to baseline
 			Name: "baseline",
-			// Create the policy in the tenant's core namespace
+			// Create the policy in the team's core namespace
 			Namespace: utils.ResolveCoreNamespaceName(t.GetName()),
 		},
 		Spec: networkingv1.NetworkPolicySpec{
@@ -298,7 +298,7 @@ func (m *multiTenancyManager) CreateTenantNetworkPolicy(ctx context.Context, t *
 			OwnerReferences: ownerReferences,
 		},
 		Spec: antreav1alpha1.ClusterNetworkPolicySpec{
-			Tier:     "tenant",
+			Tier:     "team",
 			Priority: 5,
 			AppliedTo: []antreav1alpha1.AppliedTo{
 				{
@@ -366,7 +366,7 @@ func (m *multiTenancyManager) CreateTenantNetworkPolicy(ctx context.Context, t *
 		},
 	}
 
-	// Check if in the tenant spec the cluster network policy is requested. If this is false, try to delete the policy if it exist.
+	// Check if in the team spec the cluster network policy is requested. If this is false, try to delete the policy if it exist.
 	if t.Spec.ClusterNetworkPolicy {
 		if err = m.client.Create(ctx, &clusterNetworkPolicy); err != nil && !errors.IsAlreadyExists(err) {
 			return err
@@ -399,7 +399,7 @@ func (m *multiTenancyManager) SubNamespaceCleanup(ctx context.Context, s *multit
 }
 
 // This creates a new namespace using the generated name. Then populates the namespace with the initial allocation.
-// Then gives the current tenant admin the permissions.
+// Then gives the current team admin the permissions.
 func (m *multiTenancyManager) SetupSubNamespace(ctx context.Context, s *multitenancyv1.SubNamespace) error {
 	subNamespaceName := utils.ResolveSubNamespaceName(s)
 
@@ -422,7 +422,7 @@ func (m *multiTenancyManager) SetupSubNamespace(ctx context.Context, s *multiten
 	}
 
 	// TODO: Create the role bingind etc.
-	t, err := m.getRootTenant(ctx, s)
+	t, err := m.getRootTeam(ctx, s)
 
 	if err != nil {
 		return err
@@ -432,8 +432,8 @@ func (m *multiTenancyManager) SetupSubNamespace(ctx context.Context, s *multiten
 	roleBinding := &rbacv1.RoleBinding{}
 	err = m.client.Get(ctx,
 		types.NamespacedName{
-			// The name of the rolebinding should be TenantAdminRoleName and Namespace should be core namespace
-			Name:      multitenancyv1.TenantAdminRoleName,
+			// The name of the rolebinding should be TeamAdminRoleName and Namespace should be core namespace
+			Name:      multitenancyv1.TeamAdminRoleName,
 			Namespace: subNamespaceName,
 		}, roleBinding)
 
@@ -443,7 +443,7 @@ func (m *multiTenancyManager) SetupSubNamespace(ctx context.Context, s *multiten
 		if errors.IsNotFound(err) {
 			roleBinding = &rbacv1.RoleBinding{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      multitenancyv1.TenantAdminRoleName,
+					Name:      multitenancyv1.TeamAdminRoleName,
 					Namespace: subNamespaceName,
 					Labels: map[string]string{
 						"edge-net.io/generated":    "true",
@@ -459,7 +459,7 @@ func (m *multiTenancyManager) SetupSubNamespace(ctx context.Context, s *multiten
 				},
 				RoleRef: rbacv1.RoleRef{
 					Kind: "ClusterRole",
-					Name: multitenancyv1.TenantAdminRoleName,
+					Name: multitenancyv1.TeamAdminRoleName,
 				},
 			}
 
@@ -470,8 +470,8 @@ func (m *multiTenancyManager) SetupSubNamespace(ctx context.Context, s *multiten
 	return nil
 }
 
-// Gets the tenant of the topmost namespace in the subnamespace hierarchy.
-func (m *multiTenancyManager) getRootTenant(ctx context.Context, s *multitenancyv1.SubNamespace) (*multitenancyv1.Tenant, error) {
+// Gets the team of the topmost namespace in the subnamespace hierarchy.
+func (m *multiTenancyManager) getRootTeam(ctx context.Context, s *multitenancyv1.SubNamespace) (*multitenancyv1.Team, error) {
 	// Start with the current namespace then go up.
 	currentNamespaceName := utils.ResolveSubNamespaceName(s)
 
@@ -487,17 +487,17 @@ func (m *multiTenancyManager) getRootTenant(ctx context.Context, s *multitenancy
 		if namespaceType, ok := currentNamespace.GetLabels()["edge-net.io/kind"]; !ok {
 			return nil, errors2.New("currently traversed namespace doesn't have required labels")
 		} else {
-			// If the type of the namespace is core then get the tenant with the same name
+			// If the type of the namespace is core then get the team with the same name
 			if namespaceType == "core" {
-				tenant := &multitenancyv1.Tenant{}
+				team := &multitenancyv1.Team{}
 
-				// Try to get the tenant with the same name as the tenant.
-				if err := m.client.Get(ctx, types.NamespacedName{Name: currentNamespace.Name}, tenant); err != nil {
+				// Try to get the team with the same name as the team.
+				if err := m.client.Get(ctx, types.NamespacedName{Name: currentNamespace.Name}, team); err != nil {
 					return nil, err
 				}
 
 				// Happy ending
-				return tenant, nil
+				return team, nil
 			} else if namespaceType == "sub" {
 				if namespaceParent, ok := currentNamespace.GetLabels()["edge-net.io/parent"]; !ok {
 					return nil, errors2.New("cannot get label on namespace, 'edge-net.io/parent'")

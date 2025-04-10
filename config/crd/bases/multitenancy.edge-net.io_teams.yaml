@@ -4,16 +4,16 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.14.0
-  name: tenants.multitenancy.edge-net.io
+  name: teams.multitenancy.edge-net.io
 spec:
   group: multitenancy.edge-net.io
   names:
-    kind: Tenant
-    listKind: TenantList
-    plural: tenants
+    kind: Team
+    listKind: TeamList
+    plural: teams
     shortNames:
-    - tenant
-    singular: tenant
+    - team
+    singular: team
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -29,7 +29,7 @@ spec:
     name: v1
     schema:
       openAPIV3Schema:
-        description: Tenant is the Schema for the tenants API
+        description: Team is the Schema for the teams API
         properties:
           apiVersion:
             description: |-
@@ -49,11 +49,11 @@ spec:
           metadata:
             type: object
           spec:
-            description: TenantSpec defines the desired state of Tenant
+            description: TeamSpec defines the desired state of Team
             properties:
               admin:
                 description: |-
-                  This is the admin username for the tenant. A role binding will be created for user with this username.
+                  This is the admin username for the team. A role binding will be created for user with this username.
                   The username for some cases can also be emails. This was the old method. But with different identity
                   providers this can be any name.
                 maxLength: 200
@@ -62,15 +62,15 @@ spec:
               clusterNetworkPolicy:
                 default: false
                 description: Whether cluster-level network policies will be applied
-                  to tenant namespaces for security purposes.
+                  to team namespaces for security purposes.
                 type: boolean
               description:
                 description: Description provides additional information about the
-                  tenant.
+                  team.
                 maxLength: 200
                 type: string
               fullName:
-                description: Full name of the tenant.
+                description: Full name of the team.
                 maxLength: 80
                 type: string
               initialRequest:
@@ -81,11 +81,11 @@ spec:
                   pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                   x-kubernetes-int-or-string: true
                 description: |-
-                  This represents the initial resource allocation for the tenant. If not specified, the tenant resource
+                  This represents the initial resource allocation for the team. If not specified, the team resource
                   quota will not be created.
                 type: object
               url:
-                description: Website of the tenant.
+                description: Website of the team.
                 maxLength: 2000
                 pattern: ^(https?://)?([\da-z\.-]+)\.([a-z\.]{2,6})([/\w \.-]*)*/?$
                 type: string
@@ -96,7 +96,7 @@ spec:
             - url
             type: object
           status:
-            description: TenantStatus defines the observed state of Tenant
+            description: TeamStatus defines the observed state of Team
             properties:
               failed:
                 description: Failed sets the backoff limit.

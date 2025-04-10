@@ -31,7 +31,7 @@ import (
 	multitenancyv1 "github.com/edgenet-project/edgenet/api/multitenancy/v1"
 )
 
-var _ = Describe("Tenant Controller", func() {
+var _ = Describe("Team Controller", func() {
 	Context("When reconciling a resource", func() {
 		const resourceName = "test-resource"
 
@@ -41,18 +41,18 @@ var _ = Describe("Tenant Controller", func() {
 			Name:      resourceName,
 			Namespace: "default", // TODO(user):Modify as needed
 		}
-		tenant := &multitenancyv1.Tenant{}
+		team := &multitenancyv1.Team{}
 
 		BeforeEach(func() {
-			By("creating the custom resource for the Kind Tenant")
-			err := k8sClient.Get(ctx, typeNamespacedName, tenant)
+			By("creating the custom resource for the Kind Team")
+			err := k8sClient.Get(ctx, typeNamespacedName, team)
 			if err != nil && errors.IsNotFound(err) {
-				resource := &multitenancyv1.Tenant{
+				resource := &multitenancyv1.Team{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      resourceName,
 						Namespace: "default",
 					},
-					Spec: multitenancyv1.TenantSpec{
+					Spec: multitenancyv1.TeamSpec{
 						FullName:             "Test User",
 						Description:          "This is the description of the test user.",
 						Admin:                "testuser",
@@ -67,16 +67,16 @@ var _ = Describe("Tenant Controller", func() {
 
 		AfterEach(func() {
 			// TODO(user): Cleanup logic after each test, like removing the resource instance.
-			// resource := &multitenancyv1.Tenant{}
+			// resource := &multitenancyv1.Team{}
 			// err := k8sClient.Get(ctx, typeNamespacedName, resource)
 			// Expect(err).NotTo(HaveOccurred())
 
-			// By("Cleanup the specific resource instance Tenant")
+			// By("Cleanup the specific resource instance Team")
 			// Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
 		})
 		It("should successfully reconcile the resource", func() {
 			// By("Reconciling the created resource")
-			// controllerReconciler := &TenantReconciler{
+			// controllerReconciler := &TeamReconciler{
 			// 	Client: k8sClient,
 			// 	Scheme: k8sClient.Scheme(),
 			// }

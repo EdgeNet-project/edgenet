@@ -20,7 +20,7 @@ To extend, and adapt Kubernetes into edge computing, EdgeNet employs various fea
 
 <!-- You can click on them to go through [technical documentation](/docs/custom_resources.md) or see the [detailed concepts](/docs/README.md#concepts). -->
     
-* [Multitenancy](/docs/README.md#multitenancy): EdgeNet enables the utilization of a shared cluster by multiple tenants who lack trust in each other. Tenants can allocate resource quotas or slices, and they also have the ability to offer their resources to other tenants. This functionality empowers tenants to function both as providers and consumers, operating in both vendor and consumer modes.
+* [Multitenancy](/docs/README.md#multitenancy): EdgeNet enables the utilization of a shared cluster by multiple teams who lack trust in each other. Teams can allocate resource quotas or slices, and they also have the ability to offer their resources to other teams. This functionality empowers teams to function both as providers and consumers, operating in both vendor and consumer modes.
 
 * [Multiprovider](/docs/README.md#multiprovider): By accommodating the collaboration of diverse providers, EdgeNet encourages numerous entities to contribute to nodes, thus fostering a rich and expansive ecosystem that thrives on heterogeneity. With the power of multitenancy, contributors with different hardware can easily lend their hardware.
 

@@ -17,4 +17,4 @@ resources:
 - auth_proxy_role_binding.yaml
 - auth_proxy_client_clusterrole.yaml
 # Add specific roles to edgenet
-- tenant_admin_role.yaml
+- team_admin_role.yaml
